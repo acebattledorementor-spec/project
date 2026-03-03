@@ -48,14 +48,14 @@ const BOOKING_CONFIG = {
 }
 
 const HOMEPAGE_IMAGES = [
-  "/homepage/IMG_4752.jpeg",
+  "/homepage/IMG_4762.jpeg",
   "/homepage/IMG_4761.jpeg",
   "/homepage/IMG_4760.jpeg",
   "/homepage/IMG_4759.jpeg",
   "/homepage/IMG_4757.jpeg",
   "/homepage/IMG_4756.jpeg",
   "/homepage/IMG_4755.jpeg",
-  "/homepage/IMG_4762.jpeg"
+  "/homepage/IMG_4752.jpeg"
 ]
 
 const ABOUT_DATA = {
