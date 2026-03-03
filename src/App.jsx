@@ -75,7 +75,8 @@ const ABOUT_DATA = {
     { name: "Buddha Apparao", role: "Founder", experience: "Visionary leader and passionate badminton enthusiast", image: "/team/Buddha Appa rao.jpeg" },
     { name: "Adilaxmi", role: "Founder", experience: "Co-founder dedicated to nurturing young talent", image: "/team/Adilaxmi.jpeg" },
     { name: "Pavan Buddha", role: "Head Coach", experience: "S/O Buddha Apparao, Professional certified coach", image: "/team/Pavan Buddha.jpeg" },
-    { name: "Sai Buddha", role: "Head Coach", experience: "S/O Buddha Apparao, Elite training specialist", image: "/team/Sai Buddha.jpeg" }
+    { name: "Sai Buddha", role: "Head Coach", experience: "S/O Buddha Apparao, Elite training specialist", image: "/team/Sai Buddha.jpeg" },
+    { name: "Sarath", role: "Facility Management Expert", experience: "Expert in facility management and operations", image: "/team/sarath.jpeg" }
   ]
 }
 
