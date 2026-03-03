@@ -177,6 +177,21 @@ body {
   background-clip: text;
 }
 
+.logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: flex-start;
+}
+
+.logo-subtitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .nav-tabs {
   display: flex;
   list-style: none;
@@ -1568,7 +1583,7 @@ body {
     padding: 0.5rem;
   }
 
-  .nav-logo .logo-text {
+  .nav-logo .logo-subtitle {
     display: none;
   }
 }

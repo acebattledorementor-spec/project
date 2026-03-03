@@ -203,7 +203,10 @@ const Navigation = ({ activeTab, setActiveTab }) => {
         transition={{ duration: 0.5 }}
       >
         <span className="logo-icon">🏸</span>
-        <span className="logo-text">{SITE_CONFIG.name}</span>
+        <div className="logo-wrapper">
+          <span className="logo-text">{SITE_CONFIG.name}</span>
+          <span className="logo-subtitle">{SITE_CONFIG.tagline}</span>
+        </div>
       </motion.div>
       
       <ul className="nav-tabs">
