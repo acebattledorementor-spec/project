@@ -231,14 +231,19 @@ body {
 /* ==================== HERO SECTION ==================== */
 .hero {
   position: relative;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 3rem;
-  padding-top: 120px;
+  padding: 0;
+  margin: 0;
   margin-bottom: 2rem;
   overflow: hidden;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
 }
 
 .hero-banner {
@@ -254,7 +259,7 @@ body {
     rgba(26, 26, 46, 0.9) 0%,
     rgba(22, 33, 62, 0.95) 100%
   );
-  padding: 1rem 2.5rem;
+  padding: 2rem 3rem;
   border-radius: 50px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 215, 0, 0.4);
@@ -263,6 +268,7 @@ body {
     0 0 20px rgba(255, 215, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   animation: floatBanner 4s ease-in-out infinite;
+  max-width: 90%;
 }
 
 @keyframes floatBanner {
@@ -315,16 +321,30 @@ body {
 /* ==================== BACKGROUND IMAGE SLIDESHOW ==================== */
 .background-slideshow {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1;
+  overflow: hidden;
 }
 
 .background-image {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  opacity: 1;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.background-image.fade-out {
+  opacity: 0;
 }
 
 .background-overlay {
@@ -1503,7 +1523,20 @@ body {
   }
 
   .hero {
-    padding: 1.5rem;
+    width: 100vw;
+    height: 100vh;
+    margin-bottom: 2rem;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+
+  .hero-banner {
+    padding: 1.5rem 1.2rem;
+    gap: 0.6rem;
+    border-radius: 20px;
+    max-width: 95%;
   }
 
   .slideshow-indicators {
