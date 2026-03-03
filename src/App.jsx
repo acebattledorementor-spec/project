@@ -23,11 +23,11 @@ import './App.css'
 // You can easily modify this data to customize your website
 
 const SITE_CONFIG = {
-  name: "ACE Battledore",
+  name: "ACE BATTLEDORE",
   tagline: "Badminton Centre of Excellence",
   description: "Elevating Your Game to Championship Level",
-  phone: "+1 (555) 123-4567",
-  email: "info@acebattledore.com",
+  phone: "8884404456",
+  email: "ACEBATTLEDOREMENTOR@GMAIL.COM",
   address: "21/1 Kempanahalli Village, Yelahanka, Bengaluru, Karnataka 560064",
   hours: "All Days: 6:00 AM - 10:00 PM"
 }
