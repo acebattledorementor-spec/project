@@ -28,7 +28,7 @@ const SITE_CONFIG = {
   description: "Elevating Your Game to Championship Level",
   phone: "+1 (555) 123-4567",
   email: "info@acebattledore.com",
-  address: "123 Sports Avenue, Champion City, SC 12345",
+  address: "21/1 Kempanahalli Village, Yelahanka, Bengaluru, Karnataka 560064",
   hours: "All Days: 6:00 AM - 10:00 PM"
 }
 
