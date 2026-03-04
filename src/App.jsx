@@ -60,13 +60,13 @@ const HOMEPAGE_IMAGES = [
 
 const ABOUT_DATA = {
   story: `ACE Battledore was founded in 2015 with a vision to create world-class badminton players. 
-  Our state-of-the-art facility spans over 50,000 square feet, featuring 12 international-standard courts, 
-  professional coaching staff, and cutting-edge training equipment. We've trained over 500 players, 
+  Our state-of-the-art facility spans over 50,000 square feet, featuring 5 international-standard courts, 
+  professional coaching staff, and cutting-edge training equipment. We've trained over 100 players, 
   with many going on to compete at national and international levels.`,
   mission: "To nurture badminton talent and create champions through systematic training, world-class facilities, and passionate coaching.",
   vision: "To become the leading badminton training center, producing Olympic-level athletes and promoting the sport globally.",
   stats: [
-    { number: "500+", label: "Players Trained" },
+    { number: "100+", label: "Players Trained" },
     { number: "5", label: "Professional Courts" },
     { number: "2", label: "Expert Coaches" },
     { number: "50+", label: "Championships Won" }
