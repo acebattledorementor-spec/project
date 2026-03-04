@@ -44,6 +44,14 @@ const BOOKING_CONFIG = {
     weekend: [
       { start: 6, end: 22, price: 350, label: "All Day (6AM-10PM)" }
     ]
+  },
+  bulkBookings: {
+    monthly: {
+      weekdaysOnly: { price: 6500, label: "Only Weekdays" },
+      fullMonth: { price: 9750, label: "Full Month" }
+    },
+    quarterly: 29250,
+    yearly: 109500
   }
 }
 
@@ -84,38 +92,67 @@ const SKILL_PROGRAMS = [
   {
     id: 1,
     title: "Beginner's Foundation",
-    level: "Beginner",
-    duration: "8 Weeks",
-    price: "$299",
-    description: "Perfect for newcomers to badminton. Learn fundamentals including grip, stance, basic strokes, and court movement.",
-    features: ["Basic stroke techniques", "Footwork fundamentals", "Rules and scoring", "Equipment guidance"]
+    level: "Beginner (Kids & Adults)",
+    duration: "Monthly, 3-6 Months, Yearly",
+    price: "₹4,000/Month | ₹11,500 (3M) | ₹23,000 (6M) | ₹40,500 (Yearly)",
+    description: "Build strong fundamentals from scratch with COE Level 1 focus. Perfect for newcomers to badminton.",
+    features: [
+      "Grip, stance, and footwork basics",
+      "Forehand & backhand drives",
+      "Lift techniques and high strokes",
+      "Simple rallies and basic game play",
+      "Building confidence and discipline",
+      "Front court strokes: Keeps, Drives, Lifts, Toss, Drop, Smash"
+    ]
   },
   {
     id: 2,
     title: "Intermediate Mastery",
-    level: "Intermediate",
-    duration: "12 Weeks",
-    price: "$499",
-    description: "Advance your skills with complex techniques, tactical play, and competitive strategies.",
-    features: ["Advanced strokes", "Tactical awareness", "Match strategies", "Fitness conditioning"]
+    level: "Intermediate (Kids & Adults)",
+    duration: "Monthly, 3-6 Months, Yearly",
+    price: "₹4,500-₹5,000/Month | ₹13,500 (3M) | ₹25,000 (6M) | ₹50,000 (Yearly)",
+    description: "Refine your skills & improve game strategy with COE Level 2 focus. Build match-ready competence.",
+    features: [
+      "Advanced footwork & movement drills",
+      "Smash, drop, and net shot variations",
+      "Serve strategies for hard smash & double techniques",
+      "Match playing skills (Lights and strength training)",
+      "Back court expertise: Smash variations (Long/Mid/Short)",
+      "Rally control & tempo management",
+      "T-Pass and cross-court patterns"
+    ]
   },
   {
     id: 3,
     title: "Advanced Competition",
     level: "Advanced",
-    duration: "16 Weeks",
-    price: "$799",
-    description: "Elite training for competitive players aiming for tournament success.",
-    features: ["Tournament preparation", "Video analysis", "Mental conditioning", "1-on-1 coaching sessions"]
+    duration: "12-16 Weeks",
+    price: "Custom Pricing Available",
+    description: "Elite training for competitive players mastering technical and tactical play (COE Level 3).",
+    features: [
+      "Technical analysis of game play mechanics",
+      "Tactical variation & shot selection",
+      "Opponent analysis & matchup strategies",
+      "Full-court movement patterns",
+      "Video analysis and performance optimization",
+      "Tournament preparation and match scenarios"
+    ]
   },
   {
     id: 4,
     title: "Junior Champions",
     level: "Ages 8-16",
-    duration: "Ongoing",
-    price: "$199/month",
-    description: "Specialized program for young talents with age-appropriate training and fun activities.",
-    features: ["Age-appropriate training", "Skill development games", "Competition preparation", "Progress tracking"]
+    duration: "Ongoing Programs",
+    price: "₹4,000/Month | Custom Packages",
+    description: "Specialized program building future champions from fundamentals through advanced techniques.",
+    features: [
+      "Age-appropriate stroke development",
+      "Progressive COE assessment pathway (Level 1-4)",
+      "Fun-based skill games & drills",
+      "Competition preparation",
+      "Mental conditioning for young athletes",
+      "Individual & group coaching available"
+    ]
   }
 ]
 
@@ -170,6 +207,174 @@ const ASSESSMENT_QUESTIONS = [
   }
 ]
 
+const COE_ASSESSMENT = {
+  title: "ACE BATTLEDORE - CENTER OF EXCELLENCE",
+  description: "Comprehensive skill assessment framework for badminton excellence",
+  levels: [
+    {
+      id: 'level-1',
+      name: 'Level 1',
+      title: 'Stroke Placement & Accuracy',
+      duration: '10 shuttles × 1 set only',
+      modules: [
+        {
+          id: 'm1',
+          name: 'Module 1: Front Court - Standing (Ex.1)',
+          criteria: [
+            { 
+              stance: '(A) Front Eight; Side',
+              positions: [
+                'i. Straight Keeps',
+                'ii. Straight Drives',
+                'iii. Straight Lift (High)',
+                'iv. Toss',
+                'v. Drop',
+                'vi. Smash'
+              ]
+            },
+            { 
+              stance: '(B) Front Left Side - Straight Keeps',
+              positions: [
+                'i. Straight Keeps',
+                'ii. Doubles',
+                'iii. Tap',
+                'iv. Lift (High)',
+                'v. Push (Downwards)',
+                'vi. Push-Lift'
+              ]
+            },
+            { 
+              stance: '(B) Cross Court Keep',
+              positions: [
+                'i. Tap',
+                'ii. Tap (High)',
+                'iii. Push',
+                'iv. Push',
+                'v. Even Lift'
+              ]
+            }
+          ]
+        },
+        {
+          id: 'm2',
+          name: 'Module 2: Back Court (Straight)',
+          criteria: [
+            { 
+              stance: '(A) Back Eight; Straight',
+              positions: [
+                'i. Toss',
+                'ii. Drop - Slow, Fast',
+                'iii. Smash - 1. Long, 2. Mid, 3. Short',
+                'iv. Even Lift'
+              ]
+            },
+            { 
+              stance: '(B) Cross Court',
+              positions: [
+                'i. T-Pass',
+                'ii. Drops - Slow, Fast',
+                'iii. Smash - 1. Long, 2. Mid, 3. Short'
+              ]
+            },
+            { 
+              stance: '(B) Cross Court Keep',
+              positions: [
+                'i. Tap',
+                'ii. Tap (High)',
+                'iii. Push',
+                'iv. Push (Downwards)',
+                'v. Even Lift'
+              ]
+            }
+          ]
+        },
+        {
+          id: 'm3',
+          name: 'Module 3: Full Court Movement & Patterns',
+          criteria: [
+            { 
+              stance: 'Front Court Combinations',
+              positions: [
+                '(A) Front Eight; Side - Straight keeps + Drives + Lift',
+                '(B) Front Left Side - Keep + Doubles + Tap + Lift',
+                '(C) Front Cross Court - Tap + Tap (High) + Push + Even Lift'
+              ]
+            },
+            { 
+              stance: 'Back Court Combinations',
+              positions: [
+                '(A) Back Eight; Straight - Toss + Drop (Slow/Fast) + Smash (Long/Mid/Short)',
+                '(B) Back Cross Court - T-Pass + Drops (Slow/Fast) + Smash',
+                '(C) Back Cross Court Keep - Tap + Tap (High) + Push (Downwards) + Even Lift'
+              ]
+            },
+            { 
+              stance: 'Integrated Court Movement',
+              positions: [
+                'Transition from Front to Back Court',
+                'Transition from Back to Front Court',
+                'Cross-Court Recovery Patterns',
+                'Full-Court Point Construction'
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'level-2',
+      name: 'Level 2',
+      title: 'Physical Examination & Rally Control',
+      modules: [
+        {
+          id: 'm4',
+          name: 'Module 4: Physical Examination',
+          criteria: ['Flexibility', 'Strength', 'Endurance', 'Speed & Agility', 'Coordination']
+        },
+        {
+          id: 'm5',
+          name: 'Module 5: Rally Control & Tempo',
+          criteria: ['Shot Selection', 'Court Positioning', 'Pace Management', 'Point Construction', 'Recovery Patterns']
+        }
+      ]
+    },
+    {
+      id: 'level-3',
+      name: 'Level 3',
+      title: 'Technical & Tactical Excellence',
+      modules: [
+        {
+          id: 'm6',
+          name: 'Module 6: Technical Analysis of Game Play',
+          criteria: ['Stroke Mechanics', 'Footwork Efficiency', 'Body Rotation', 'Follow-through', 'Consistency']
+        },
+        {
+          id: 'm7',
+          name: 'Module 7: Tactical Variation (Shot Selection)',
+          criteria: ['Offensive Tactics', 'Defensive Strategy', 'Match Reading', 'Opponent Analysis', 'Pressure Management']
+        }
+      ]
+    },
+    {
+      id: 'level-4',
+      name: 'Level 4',
+      title: 'Champion Development',
+      modules: [
+        {
+          id: 'm8',
+          name: 'Physical Excellence',
+          criteria: ['Peak Conditioning', 'Injury Prevention', 'Recovery Protocols', 'Nutrition Guidance']
+        },
+        {
+          id: 'm9',
+          name: 'Mental Fortitude',
+          criteria: ['Pressure Handling', 'Focus & Concentration', 'Motivation Management', 'Championship Mindset']
+        }
+      ]
+    }
+  ]
+}
+
 // ==================== COMPONENTS ====================
 
 // Animated Background Component
@@ -187,6 +392,7 @@ const AnimatedBackground = () => (
 const Navigation = ({ activeTab, setActiveTab }) => {
   const tabs = [
     { id: 'about', label: 'About Us', icon: Users },
+    { id: 'coe', label: 'COE', icon: Award },
     { id: 'bookings', label: 'Book Court', icon: Calendar },
     { id: 'programs', label: 'Skill Programs', icon: Trophy },
     { id: 'induction', label: 'Induction', icon: BookOpen },
@@ -717,6 +923,154 @@ const SelfAssessment = () => {
   )
 }
 
+// COE (Center of Excellence) Assessment Page
+const CenterOfExcellence = () => {
+  const [expandedLevel, setExpandedLevel] = useState(null)
+
+  return (
+    <motion.div 
+      className="page coe-page"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="page-header">
+        <motion.h2 
+          className="page-title"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Award className="icon" /> Center of <span className="highlight">Excellence</span>
+        </motion.h2>
+        <motion.p 
+          className="page-subtitle"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          {COE_ASSESSMENT.description}
+        </motion.p>
+      </div>
+
+      <div className="coe-framework">
+        <motion.div 
+          className="coe-intro"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <h3>Structured Assessment Framework</h3>
+          <p>Our four-level assessment system ensures comprehensive evaluation of player development across technical, physical, and mental dimensions.</p>
+        </motion.div>
+
+        <div className="coe-levels">
+          {COE_ASSESSMENT.levels.map((level, levelIndex) => (
+            <motion.div 
+              key={level.id}
+              className="coe-level-card"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 + levelIndex * 0.15 }}
+            >
+              <motion.div 
+                className="level-header"
+                onClick={() => setExpandedLevel(expandedLevel === level.id ? null : level.id)}
+                whileHover={{ scale: 1.02 }}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="level-badge">{level.name}</div>
+                <div className="level-info">
+                  <h3>{level.title}</h3>
+                  {level.duration && <p className="level-duration">{level.duration}</p>}
+                </div>
+                <ChevronRight className={`level-icon ${expandedLevel === level.id ? 'expanded' : ''}`} />
+              </motion.div>
+
+              <AnimatePresence>
+                {expandedLevel === level.id && (
+                  <motion.div 
+                    className="level-modules"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {level.modules.map((module, moduleIndex) => (
+                      <motion.div 
+                        key={module.id}
+                        className="module"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: moduleIndex * 0.1 }}
+                      >
+                        <h4>{module.name}</h4>
+                        {Array.isArray(module.criteria) && module.criteria.length > 0 && (
+                          <ul className="criteria-list">
+                            {module.criteria.map((criterion, idx) => {
+                              if (typeof criterion === 'string') {
+                                return <li key={idx}><span className="criterion-dot">•</span> {criterion}</li>
+                              } else if (criterion.stance) {
+                                return (
+                                  <li key={idx}>
+                                    <span className="stance-label">{criterion.stance}:</span>
+                                    <ul className="sub-criteria">
+                                      {criterion.positions.map((pos, pIdx) => (
+                                        <li key={pIdx}>{pos}</li>
+                                      ))}
+                                    </ul>
+                                  </li>
+                                )
+                              }
+                              return null
+                            })}
+                          </ul>
+                        )}
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div 
+          className="coe-benefits"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 1.2 }}
+        >
+          <h3>Why COE Assessment?</h3>
+          <div className="benefits-grid">
+            <div className="benefit-card">
+              <Trophy className="benefit-icon" />
+              <h4>Comprehensive Evaluation</h4>
+              <p>Multi-dimensional assessment covering technique, fitness, and strategy</p>
+            </div>
+            <div className="benefit-card">
+              <Target className="benefit-icon" />
+              <h4>Clear Progression</h4>
+              <p>Structured pathway from beginner to champion level</p>
+            </div>
+            <div className="benefit-card">
+              <Award className="benefit-icon" />
+              <h4>Recognized Standard</h4>
+              <p>Industry-validated framework aligned with badminton excellence</p>
+            </div>
+            <div className="benefit-card">
+              <Zap className="benefit-icon" />
+              <h4>Personalized Growth</h4>
+              <p>Targeted feedback for continuous improvement</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
+
 // Contact Us Page
 const ContactUs = () => {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' })
@@ -1067,9 +1421,23 @@ Please confirm this booking with the customer.`
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <h4><Star size={18} /> Weekend Rates (Sat-Sun)</h4>
+          <h4><Star size={18} /> Weekend Rates (Sat-Sun-Holidays)</h4>
           <ul>
             <li>6:00 AM - 10:00 PM: <strong>₹350/hour</strong></li>
+          </ul>
+        </motion.div>
+        <motion.div 
+          className="pricing-card bulk"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <h4><Trophy size={18} /> Bulk Booking Discounts</h4>
+          <ul>
+            <li><strong>Monthly (Weekdays):</strong> ₹6,500</li>
+            <li><strong>Monthly (Full):</strong> ₹9,750</li>
+            <li><strong>Quarterly:</strong> ₹29,250</li>
+            <li><strong>Yearly:</strong> ₹1,09,500</li>
           </ul>
         </motion.div>
       </div>
@@ -1238,6 +1606,8 @@ function App() {
     switch (activeTab) {
       case 'about':
         return <AboutUs key="about" />
+      case 'coe':
+        return <CenterOfExcellence key="coe" />
       case 'programs':
         return <SkillPrograms key="programs" />
       case 'bookings':

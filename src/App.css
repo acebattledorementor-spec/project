@@ -1094,7 +1094,7 @@ body {
 
 .booking-pricing-info {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -1104,6 +1104,17 @@ body {
   border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 12px;
   padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+  border-color: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.15);
+}
+
+.pricing-card.bulk {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.3);
 }
 
 .pricing-card h4 {
@@ -1123,6 +1134,7 @@ body {
   padding: 0.5rem 0;
   color: rgba(255, 255, 255, 0.8);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.95rem;
 }
 
 .pricing-card li:last-child {
@@ -1587,3 +1599,261 @@ body {
     display: none;
   }
 }
+
+/* ==================== COE (CENTER OF EXCELLENCE) STYLES ==================== */
+.coe-page {
+  padding: 2rem 0;
+}
+
+.coe-framework {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.coe-intro {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 2.5rem;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.coe-intro h3 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+.coe-intro p {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.coe-levels {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.coe-level-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.coe-level-card:hover {
+  border-color: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.15);
+}
+
+.level-header {
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, transparent 100%);
+  border-bottom: 2px solid rgba(255, 215, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.level-header:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, transparent 100%);
+}
+
+.level-badge {
+  background: var(--primary);
+  color: var(--text-dark);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: fit-content;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.level-info {
+  flex: 1;
+  text-align: left;
+}
+
+.level-info h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+  color: var(--primary);
+}
+
+.level-duration {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.level-icon {
+  transition: transform 0.3s ease;
+  color: var(--primary);
+}
+
+.level-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.level-modules {
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.module {
+  margin-bottom: 2rem;
+}
+
+.module:last-child {
+  margin-bottom: 0;
+}
+
+.module h4 {
+  font-size: 1.1rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+}
+
+.criteria-list {
+  list-style: none;
+  padding: 0;
+}
+
+.criteria-list li {
+  padding: 0.5rem 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.criterion-dot {
+  color: var(--primary);
+  margin-right: 0.5rem;
+}
+
+.stance-label {
+  font-weight: 600;
+  color: var(--primary);
+  display: inline-block;
+  min-width: 120px;
+}
+
+.sub-criteria {
+  list-style: none;
+  margin-left: 2rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0;
+  border-left: 2px solid rgba(255, 215, 0, 0.2);
+  padding-left: 1rem;
+}
+
+.sub-criteria li {
+  padding: 0.3rem 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.9rem;
+}
+
+.coe-benefits {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.2);
+  border-radius: 16px;
+  padding: 3rem;
+  margin-top: 3rem;
+}
+
+.coe-benefits h3 {
+  font-size: 1.8rem;
+  color: var(--primary);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.benefit-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-10px);
+  border-color: var(--primary);
+  box-shadow: 0 15px 40px rgba(255, 215, 0, 0.2);
+}
+
+.benefit-icon {
+  color: var(--primary);
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+}
+
+.benefit-card h4 {
+  font-size: 1.2rem;
+  color: var(--text-light);
+  margin-bottom: 0.8rem;
+}
+
+.benefit-card p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .coe-framework {
+    padding: 0 1rem;
+  }
+
+  .coe-intro {
+    padding: 1.5rem;
+  }
+
+  .level-header {
+    padding: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .level-badge {
+    order: -1;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .level-info {
+    width: 100%;
+  }
+
+  .level-modules {
+    padding: 1.5rem;
+  }
+
+  .coe-benefits {
+    padding: 1.5rem;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
