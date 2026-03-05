@@ -32,6 +32,20 @@ const SITE_CONFIG = {
   hours: "All Days: 6:00 AM - 10:00 PM"
 }
 
+// social media configuration for homepage embeds
+const SOCIAL_CONFIG = {
+  instagramHandle: "your_instagram_handle", // replace with real handle
+  instagramPosts: [
+    "https://www.instagram.com/p/POSTID1/",
+    "https://www.instagram.com/p/POSTID2/",
+    "https://www.instagram.com/p/POSTID3/",
+    "https://www.instagram.com/p/POSTID4/"
+  ],
+  // only one video will be displayed and autoplayed
+  youtubeFeatured: "X-pjndP7sNw",
+  youtubeChannelId: "UCxxxxxxxxxxxx" // replace with your actual channel ID
+}
+
 const BOOKING_CONFIG = {
   courts: ["Court 1", "Court 2", "Court 3", "Court 4", "Court 5"],
   businessHours: { start: 6, end: 22 }, // 6am to 10pm
@@ -444,6 +458,51 @@ const Navigation = ({ activeTab, setActiveTab }) => {
   )
 }
 
+// Social media feed component
+const SocialFeed = () => {
+  // show four recent posts in a horizontal scroll for each platform
+  return (
+    <motion.div
+      className="social-section"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 1 }}
+    >
+      <h3>Follow Us</h3>
+      <div className="social-embeds horizontal">
+        <div className="instagram-embed carousel">
+          {SOCIAL_CONFIG.instagramPosts.map((url, idx) => (
+            <iframe
+              key={idx}
+              title={`Instagram post ${idx + 1}`}
+              src={url + "embed"}
+              loading="lazy"
+              allowTransparency
+            ></iframe>
+          ))}
+        </div>
+        <div className="youtube-embed carousel">
+          <iframe
+            title="YouTube featured video"
+            src={`https://www.youtube.com/embed/${SOCIAL_CONFIG.youtubeFeatured}?autoplay=1&mute=1`}
+            loading="lazy"
+          ></iframe>
+        </div>
+        <div className="youtube-subscribe">
+          <a
+            href={`https://www.youtube.com/channel/${SOCIAL_CONFIG.youtubeChannelId}?sub_confirmation=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="subscribe-button"
+          >
+            Subscribe to our channel
+          </a>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 // Background Image Slideshow Component
 const BackgroundSlideshow = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -627,6 +686,9 @@ const AboutUs = () => (
           ))}
         </div>
       </motion.div>
+
+      {/* social feed section inserted after team */}
+      <SocialFeed />
     </div>
   </motion.div>
 )

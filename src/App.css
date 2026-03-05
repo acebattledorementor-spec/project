@@ -586,6 +586,86 @@ body {
   gap: 2rem;
 }
 
+/* social feed styles */
+.social-section {
+  margin: 4rem 0;
+  text-align: center;
+}
+
+.social-embeds {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  justify-content: center;
+}
+
+.social-embeds.horizontal {
+  flex-direction: column;
+}
+
+.carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.5rem;
+}
+
+.carousel iframe {
+  flex: 0 0 100%;
+  max-width: 100%;
+  height: auto;
+  scroll-snap-align: start;
+}
+
+.youtube-embed.carousel {
+  width: 100%;
+}
+
+.youtube-featured {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.youtube-featured iframe {
+  width: 90%;
+  max-width: 800px;
+  height: 450px;
+  border: none;
+}
+
+.youtube-subscribe {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.subscribe-button {
+  display: inline-block;
+  background: var(--primary);
+  color: var(--text-dark);
+  padding: 0.75rem 1.5rem;
+  border-radius: 30px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.subscribe-button:hover {
+  background: var(--primary-dark);
+}
+
+.social-embeds iframe {
+  border: none;
+  width: 350px;
+  height: 400px;
+  max-width: 100%;
+}
+
+.instagram-embed iframe {
+  background: #fff;
+}
+
 .team-card {
   background: rgba(255, 255, 255, 0.05);
   padding: 2rem;
