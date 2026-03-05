@@ -1248,6 +1248,7 @@ const ContactUs = () => {
   )
 }
 
+
 // Bookings Page
 const Bookings = () => {
   const [selectedDate, setSelectedDate] = useState('')
