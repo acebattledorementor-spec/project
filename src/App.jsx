@@ -43,7 +43,12 @@ const SOCIAL_CONFIG = {
   ],
   // only one video will be displayed and autoplayed
   youtubeFeatured: "X-pjndP7sNw",
-  youtubeChannelId: "UCxxxxxxxxxxxx" // replace with your actual channel ID
+  youtubeChannelId: "UCxxxxxxxxxxxx", // replace with your actual channel ID
+  youtubeChannelVideos: [
+    "LqCGTvt-MSw",
+    "f0vbFNlJl9o",
+    "VIDEO_ID_3"
+  ]
 }
 
 const BOOKING_CONFIG = {
@@ -497,6 +502,21 @@ const SocialFeed = () => {
           >
             Subscribe to our channel
           </a>
+        </div>
+        
+        {/* channel videos carousel */}
+        <div className="channel-videos-section">
+          <h4>More Videos from Our Channel</h4>
+          <div className="channel-videos-carousel">
+            {SOCIAL_CONFIG.youtubeChannelVideos.map((vid, idx) => (
+              <iframe
+                key={idx}
+                title={`Channel video ${idx + 1}`}
+                src={`https://www.youtube.com/embed/${vid}`}
+                loading="lazy"
+              ></iframe>
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>

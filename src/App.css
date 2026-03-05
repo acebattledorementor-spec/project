@@ -655,6 +655,33 @@ body {
   background: var(--primary-dark);
 }
 
+.channel-videos-section {
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.channel-videos-section h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+  color: var(--text-light);
+}
+
+.channel-videos-carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.5rem;
+}
+
+.channel-videos-carousel iframe {
+  flex: 0 0 100%;
+  max-width: 100%;
+  height: auto;
+  scroll-snap-align: start;
+}
+
 .social-embeds iframe {
   border: none;
   width: 350px;
