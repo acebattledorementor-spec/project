@@ -22,11 +22,57 @@ import './App.css'
 // ==================== DATA CONFIGURATION ====================
 // You can easily modify this data to customize your website
 
+const IST_TIME_ZONE = 'Asia/Kolkata'
+
+const getISTNowParts = () => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: IST_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).formatToParts(new Date())
+
+  const get = (type) => parts.find(p => p.type === type)?.value
+
+  return {
+    year: Number(get('year')),
+    month: Number(get('month')),
+    day: Number(get('day')),
+    hour: Number(get('hour')),
+    minute: Number(get('minute'))
+  }
+}
+
+const getISTTodayYMD = () => {
+  const { year, month, day } = getISTNowParts()
+  const mm = String(month).padStart(2, '0')
+  const dd = String(day).padStart(2, '0')
+  return `${year}-${mm}-${dd}`
+}
+
+const parseDateInputLocal = (ymd) => new Date(`${ymd}T00:00:00`)
+
+const toWhatsAppDigits = (phone) => String(phone || '').replace(/\D/g, '')
+
+const toIndiaWhatsAppNumber = (phone) => {
+  const digits = toWhatsAppDigits(phone)
+  if (digits.length === 10) return `91${digits}`
+  if (digits.length === 11 && digits.startsWith('0')) return `91${digits.slice(1)}`
+  if (digits.length === 12 && digits.startsWith('91')) return digits
+  return digits
+}
+
 const SITE_CONFIG = {
   name: "ACE BATTLEDORE",
   tagline: "Badminton Centre of Excellence",
   description: "Elevating Your Game to Championship Level",
-  phone: "8884404456",
+  phone: "8884404456, 8884404567",
+  whatsappBusiness: "918884404456",
+  upiPayeeVpa: "9972765565@paytm",
+  upiPayeeName: "ACE Battledore",
   email: "ACEBATTLEDOREMENTOR@GMAIL.COM",
   address: "21/1 Kempanahalli Village, Yelahanka, Bengaluru, Karnataka 560064",
   hours: "All Days: 6:00 AM - 10:00 PM"
@@ -1338,9 +1384,23 @@ const Bookings = () => {
   const [selectedSlots, setSelectedSlots] = useState([])
   const [bookingForm, setBookingForm] = useState({ name: '', phone: '', email: '' })
   const [bookingSubmitted, setBookingSubmitted] = useState(false)
+  const [customerWhatsAppUrl, setCustomerWhatsAppUrl] = useState('')
+  const [pendingBooking, setPendingBooking] = useState(null)
+  const [paymentMethod, setPaymentMethod] = useState('')
+  const [paymentUtr, setPaymentUtr] = useState('')
+  const [paymentError, setPaymentError] = useState('')
+
+  useEffect(() => {
+    setBookingSubmitted(false)
+    setCustomerWhatsAppUrl('')
+    setPendingBooking(null)
+    setPaymentMethod('')
+    setPaymentUtr('')
+    setPaymentError('')
+  }, [selectedDate, selectedCourt, selectedSlots.join(',')])
 
   const isWeekend = (dateString) => {
-    const date = new Date(dateString)
+    const date = parseDateInputLocal(dateString)
     const day = date.getDay()
     return day === 0 || day === 6
   }
@@ -1354,8 +1414,16 @@ const Bookings = () => {
   }
 
   const generateTimeSlots = () => {
+    const todayIST = getISTTodayYMD()
+    const { hour: nowHourIST, minute: nowMinuteIST } = getISTNowParts()
+
+    const minStartHourForSelectedDate =
+      selectedDate === todayIST
+        ? Math.max(BOOKING_CONFIG.businessHours.start, nowHourIST + (nowMinuteIST > 0 ? 1 : 0))
+        : BOOKING_CONFIG.businessHours.start
+
     const slots = []
-    for (let hour = BOOKING_CONFIG.businessHours.start; hour < BOOKING_CONFIG.businessHours.end; hour++) {
+    for (let hour = minStartHourForSelectedDate; hour < BOOKING_CONFIG.businessHours.end; hour++) {
       const startTime = `${hour.toString().padStart(2, '0')}:00`
       const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`
       const price = getPrice(hour, selectedDate)
@@ -1393,69 +1461,158 @@ const Bookings = () => {
       .join(', ')
   }
 
-  const handleBookingSubmit = (e) => {
-    e.preventDefault()
-    
-    const formattedDate = new Date(selectedDate).toLocaleDateString('en-IN', { 
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-    })
-    const timeSlots = getSelectedTimeSlots()
-    const total = getTotalPrice()
-    
-    // WhatsApp message
-    const whatsappMessage = `🏸 *New Court Booking Request*
+  const buildUpiDeepLink = (scheme, details) => {
+    const payeeVpa = SITE_CONFIG.upiPayeeVpa || '9972765565@paytm'
+    const payeeName = SITE_CONFIG.upiPayeeName || SITE_CONFIG.name
+    const amount = Number(details.total || 0).toFixed(2)
+    const note = `Court booking: ${details.court} | ${details.dateText} | ${details.timeSlots}`
+    const txnRef = `ACE-${Date.now()}`
+
+    const query = new URLSearchParams({
+      pa: payeeVpa,
+      pn: payeeName,
+      am: amount,
+      cu: 'INR',
+      tn: note,
+      tr: txnRef
+    }).toString()
+
+    // Common schemes:
+    // - upi://pay (generic)
+    // - tez://upi/pay (Google Pay, legacy but still widely supported)
+    // - phonepe://pay (PhonePe)
+    // - paytmmp://pay (Paytm)
+    if (scheme === 'tez') return `tez://upi/pay?${query}`
+    if (scheme === 'phonepe') return `phonepe://pay?${query}`
+    if (scheme === 'paytm') return `paytmmp://pay?${query}`
+    return `upi://pay?${query}`
+  }
+
+  const startPayment = (method) => {
+    if (!pendingBooking) return
+    setPaymentError('')
+    setPaymentMethod(method)
+
+    const url =
+      method === 'gpay'
+        ? buildUpiDeepLink('tez', pendingBooking)
+        : method === 'phonepe'
+          ? buildUpiDeepLink('phonepe', pendingBooking)
+          : method === 'paytm'
+            ? buildUpiDeepLink('paytm', pendingBooking)
+            : buildUpiDeepLink('upi', pendingBooking)
+
+    window.open(url, '_blank')
+  }
+
+  const sendNotificationsAfterPayment = (details, utr) => {
+    const whatsappMessage = `🏸 *New Court Booking Confirmation*
+
+*Payment Status:* PAID ✅
+*Payment Method:* ${details.paymentMethod}
+*UPI Ref/UTR:* ${utr}
 
 *Customer Details:*
-Name: ${bookingForm.name}
-Phone: ${bookingForm.phone}
-Email: ${bookingForm.email}
+Name: ${details.name}
+Phone: ${details.phone}
+Email: ${details.email}
 
 *Booking Details:*
-Date: ${formattedDate}
-Court: ${selectedCourt}
-Time Slots: ${timeSlots}
-Duration: ${selectedSlots.length} hour(s)
-Total Amount: ₹${total}
+Date: ${details.dateText}
+Court: ${details.court}
+Time Slots: ${details.timeSlots}
+Duration: ${details.durationHours} hour(s)
+Total Amount: ₹${details.total}
 
 Please confirm this booking.`
 
-    const whatsappUrl = `https://wa.me/919972765565?text=${encodeURIComponent(whatsappMessage)}`
-    
-    // Email notification
-    const emailSubject = `New Court Booking - ${bookingForm.name} - ${formattedDate}`
-    const emailBody = `New Court Booking Request
+    const businessNumber = toWhatsAppDigits(SITE_CONFIG.whatsappBusiness) || '918884404456'
+    const whatsappUrl = `https://wa.me/${businessNumber}?text=${encodeURIComponent(whatsappMessage)}`
+
+    const emailSubject = `PAID Court Booking - ${details.name} - ${details.dateText}`
+    const emailBody = `New Court Booking (PAID)
+
+Payment Details:
+- Status: PAID
+- Method: ${details.paymentMethod}
+- UPI Ref/UTR: ${utr}
 
 Customer Details:
-- Name: ${bookingForm.name}
-- Phone: ${bookingForm.phone}
-- Email: ${bookingForm.email}
+- Name: ${details.name}
+- Phone: ${details.phone}
+- Email: ${details.email}
 
 Booking Details:
-- Date: ${formattedDate}
-- Court: ${selectedCourt}
-- Time Slots: ${timeSlots}
-- Duration: ${selectedSlots.length} hour(s)
-- Total Amount: ₹${total}
+- Date: ${details.dateText}
+- Court: ${details.court}
+- Time Slots: ${details.timeSlots}
+- Duration: ${details.durationHours} hour(s)
+- Total Amount: ₹${details.total}
 
 Please confirm this booking with the customer.`
 
     const emailUrl = `mailto:acebattledorementor@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
-    
-    // Open WhatsApp in new tab
+
+    // Customer WhatsApp confirmation (for business to send after confirming)
+    const customerNumber = toIndiaWhatsAppNumber(details.phone)
+    const customerMessage = `🏸 *ACE Battledore Booking Confirmation*
+
+Hi ${details.name},
+
+We have received your payment (UTR: ${utr}).
+
+Booking requested:
+Date: ${details.dateText}
+Court: ${details.court}
+Time: ${details.timeSlots}
+Amount: ₹${details.total}
+
+We will confirm your booking shortly. If you need changes, call us at ${SITE_CONFIG.phone}.`
+    setCustomerWhatsAppUrl(`https://wa.me/${customerNumber}?text=${encodeURIComponent(customerMessage)}`)
+
     window.open(whatsappUrl, '_blank')
-    
-    // Open email client
     window.location.href = emailUrl
-    
+
     setBookingSubmitted(true)
     setTimeout(() => {
       setBookingSubmitted(false)
       setSelectedSlots([])
       setBookingForm({ name: '', phone: '', email: '' })
-    }, 5000)
+      setPendingBooking(null)
+      setPaymentMethod('')
+      setPaymentUtr('')
+      setPaymentError('')
+    }, 15000)
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const handleBookingSubmit = (e) => {
+    e.preventDefault()
+
+    const formattedDate = parseDateInputLocal(selectedDate).toLocaleDateString('en-IN', {
+      timeZone: IST_TIME_ZONE,
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+    const timeSlots = getSelectedTimeSlots()
+    const total = getTotalPrice()
+
+    setPaymentError('')
+    setPendingBooking({
+      name: bookingForm.name,
+      phone: bookingForm.phone,
+      email: bookingForm.email,
+      dateText: formattedDate,
+      court: selectedCourt,
+      timeSlots,
+      durationHours: selectedSlots.length,
+      total,
+      paymentMethod: paymentMethod || 'UPI'
+    })
+  }
+
+  const today = getISTTodayYMD()
 
   return (
     <motion.div 
@@ -1604,7 +1761,7 @@ Please confirm this booking with the customer.`
           >
             <h3>Booking Summary</h3>
             <div className="summary-details">
-              <p><strong>Date:</strong> {new Date(selectedDate).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p><strong>Date:</strong> {parseDateInputLocal(selectedDate).toLocaleDateString('en-IN', { timeZone: IST_TIME_ZONE, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
               <p><strong>Court:</strong> {selectedCourt}</p>
               <p><strong>Slots:</strong> {selectedSlots.length} hour(s)</p>
               <p className="total-price"><strong>Total:</strong> ₹{getTotalPrice()}</p>
@@ -1620,8 +1777,19 @@ Please confirm this booking with the customer.`
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
                   <div className="success-icon">✅</div>
-                  <h4>Booking Request Sent!</h4>
-                  <p>Notification sent via WhatsApp & Email.</p>
+                  <h4>Payment Received!</h4>
+                  <p>Booking notification sent via WhatsApp & Email.</p>
+                  {customerWhatsAppUrl && (
+                    <motion.button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => window.open(customerWhatsAppUrl, '_blank')}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Send WhatsApp Confirmation to Customer
+                    </motion.button>
+                  )}
                   <p className="confirm-note">We'll confirm your booking shortly.</p>
                 </motion.div>
               ) : (
@@ -1661,8 +1829,80 @@ Please confirm this booking with the customer.`
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Confirm Booking <Send size={18} />
+                    Proceed to Payment <Send size={18} />
                   </motion.button>
+
+                  {pendingBooking && (
+                    <div className="payment-section" style={{ marginTop: 16 }}>
+                      <h4 style={{ marginBottom: 8 }}>Pay to Confirm Booking</h4>
+                      <p style={{ marginTop: 0, opacity: 0.9 }}>
+                        Pay ₹{pendingBooking.total} to <strong>{SITE_CONFIG.upiPayeeVpa}</strong> and then paste the UPI Ref/UTR below.
+                      </p>
+
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+                        <motion.button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => startPayment('gpay')}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          Pay with Google Pay
+                        </motion.button>
+                        <motion.button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => startPayment('phonepe')}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          Pay with PhonePe
+                        </motion.button>
+                        <motion.button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => startPayment('paytm')}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          Pay with Paytm
+                        </motion.button>
+                      </div>
+
+                      <div className="form-group" style={{ marginTop: 12 }}>
+                        <input
+                          type="text"
+                          placeholder="UPI Ref / UTR (required after payment)"
+                          value={paymentUtr}
+                          onChange={(e) => setPaymentUtr(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      {paymentError && (
+                        <p style={{ marginTop: 8, color: '#ff6b6b' }}>{paymentError}</p>
+                      )}
+
+                      <motion.button
+                        type="button"
+                        className="btn-primary book-btn"
+                        style={{ marginTop: 8 }}
+                        onClick={() => {
+                          const utr = paymentUtr.trim()
+                          if (!utr) {
+                            setPaymentError('Please enter the UPI Ref/UTR after completing payment.')
+                            return
+                          }
+                          const details = { ...pendingBooking, paymentMethod: paymentMethod || 'UPI' }
+                          sendNotificationsAfterPayment(details, utr)
+                        }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Confirm Payment & Send WhatsApp Notification
+                      </motion.button>
+                    </div>
+                  )}
                 </motion.form>
               )}
             </AnimatePresence>
