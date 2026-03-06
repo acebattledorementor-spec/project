@@ -15,7 +15,9 @@ import {
   Target,
   Award,
   Zap,
-  Calendar
+  Calendar,
+  Lock,
+  LogOut
 } from 'lucide-react'
 import './App.css'
 
@@ -65,13 +67,15 @@ const toIndiaWhatsAppNumber = (phone) => {
   return digits
 }
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 const SITE_CONFIG = {
   name: "ACE BATTLEDORE",
   tagline: "Badminton Centre of Excellence",
   description: "Elevating Your Game to Championship Level",
   phone: "8884404456, 8884404567",
   whatsappBusiness: "918884404456",
-  upiPayeeVpa: "9972765565@paytm",
+  upiPayeeVpa: "saikumar2000sai@ybl",
   upiPayeeName: "ACE Battledore",
   email: "ACEBATTLEDOREMENTOR@GMAIL.COM",
   address: "21/1 Kempanahalli Village, Yelahanka, Bengaluru, Karnataka 560064",
@@ -462,7 +466,8 @@ const Navigation = ({ activeTab, setActiveTab }) => {
     { id: 'programs', label: 'Skill Programs', icon: Trophy },
     { id: 'induction', label: 'Induction', icon: BookOpen },
     { id: 'assessment', label: 'Self Assessment', icon: ClipboardCheck },
-    { id: 'contact', label: 'Contact Us', icon: Phone }
+    { id: 'contact', label: 'Contact Us', icon: Phone },
+    { id: 'logic', label: 'Logic', icon: Lock }
   ]
 
   return (
@@ -1376,6 +1381,178 @@ const ContactUs = () => {
   )
 }
 
+// Logic (Admin) Page – login and view all bookings
+const Logic = () => {
+  const [token, setToken] = useState(() => typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
+  const [bookings, setBookings] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem('admin_token', token)
+    } else {
+      localStorage.removeItem('admin_token')
+    }
+  }, [token])
+
+  useEffect(() => {
+    if (!token) return
+    setLoading(true)
+    fetch(`${API_BASE}/api/bookings`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          setToken(null)
+          return []
+        }
+        return res.json()
+      })
+      .then((data) => {
+        if (data.bookings) setBookings(data.bookings)
+      })
+      .catch(() => setBookings([]))
+      .finally(() => setLoading(false))
+  }, [token])
+
+  const handleLogin = (e) => {
+    e.preventDefault()
+    setLoginError('')
+    fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.token) {
+          setToken(data.token)
+          setUsername('')
+          setPassword('')
+        } else {
+          setLoginError(data.error || 'Invalid credentials')
+        }
+      })
+      .catch(() => setLoginError('Login failed. Is the server running?'))
+  }
+
+  const handleLogout = () => {
+    fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => {})
+    setToken(null)
+  }
+
+  if (!token) {
+    return (
+      <motion.div
+        className="page contact-page"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="page-header">
+          <motion.h2 className="page-title" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+            <Lock className="icon" /> Logic <span className="highlight">(Admin)</span>
+          </motion.h2>
+          <motion.p className="page-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
+            Sign in to view booking details
+          </motion.p>
+        </div>
+        <motion.div className="contact-container" style={{ maxWidth: 400, margin: '0 auto' }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+          <form onSubmit={handleLogin} className="contact-form">
+            <div className="form-group">
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                autoComplete="username"
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+            {loginError && <p style={{ color: '#ff6b6b', marginBottom: 12 }}>{loginError}</p>}
+            <motion.button type="submit" className="btn-primary" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              Sign In
+            </motion.button>
+          </form>
+        </motion.div>
+      </motion.div>
+    )
+  }
+
+  return (
+    <motion.div
+      className="page contact-page"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <motion.h2 className="page-title" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+            <Lock className="icon" /> Logic <span className="highlight">(Admin)</span>
+          </motion.h2>
+          <motion.p className="page-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
+            All court bookings
+          </motion.p>
+        </div>
+        <motion.button type="button" className="btn-secondary" onClick={handleLogout} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <LogOut size={18} /> Logout
+        </motion.button>
+      </div>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} style={{ overflow: 'auto' }}>
+        {loading ? (
+          <p style={{ textAlign: 'center', padding: 24 }}>Loading bookings…</p>
+        ) : bookings.length === 0 ? (
+          <p style={{ textAlign: 'center', padding: 24 }}>No bookings yet.</p>
+        ) : (
+          <div style={{ overflow: 'auto', marginTop: 16 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--card-bg, rgba(255,255,255,0.08))', borderRadius: 8 }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid rgba(255,255,255,0.2)' }}>
+                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>Date</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>Court</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>Customer</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>Phone</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>Time</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'right' }}>Amount</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>UTR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bookings.map((b) => (
+                  <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <td style={{ padding: '10px' }}>{b.date_text || b.date_ymd}</td>
+                    <td style={{ padding: '10px' }}>{b.court}</td>
+                    <td style={{ padding: '10px' }}>{b.customer_name}</td>
+                    <td style={{ padding: '10px' }}>{b.customer_phone}</td>
+                    <td style={{ padding: '10px' }}>{b.time_slots_text}</td>
+                    <td style={{ padding: '10px', textAlign: 'right' }}>₹{b.amount}</td>
+                    <td style={{ padding: '10px', fontSize: '0.9em' }}>{b.utr}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  )
+}
 
 // Bookings Page
 const Bookings = () => {
@@ -1384,20 +1561,32 @@ const Bookings = () => {
   const [selectedSlots, setSelectedSlots] = useState([])
   const [bookingForm, setBookingForm] = useState({ name: '', phone: '', email: '' })
   const [bookingSubmitted, setBookingSubmitted] = useState(false)
-  const [customerWhatsAppUrl, setCustomerWhatsAppUrl] = useState('')
   const [pendingBooking, setPendingBooking] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentUtr, setPaymentUtr] = useState('')
   const [paymentError, setPaymentError] = useState('')
+  const [paymentStatus, setPaymentStatus] = useState('idle') // idle | success | failure
+  const [bookedSlotIds, setBookedSlotIds] = useState([])
 
   useEffect(() => {
     setBookingSubmitted(false)
-    setCustomerWhatsAppUrl('')
     setPendingBooking(null)
     setPaymentMethod('')
     setPaymentUtr('')
     setPaymentError('')
+    setPaymentStatus('idle')
   }, [selectedDate, selectedCourt, selectedSlots.join(',')])
+
+  useEffect(() => {
+    if (!selectedDate || !selectedCourt) {
+      setBookedSlotIds([])
+      return
+    }
+    fetch(`${API_BASE}/api/bookings/available?date=${encodeURIComponent(selectedDate)}&court=${encodeURIComponent(selectedCourt)}`)
+      .then((r) => r.json())
+      .then((data) => setBookedSlotIds(data.bookedSlotIds || []))
+      .catch(() => setBookedSlotIds([]))
+  }, [selectedDate, selectedCourt])
 
   const isWeekend = (dateString) => {
     const date = parseDateInputLocal(dateString)
@@ -1505,84 +1694,71 @@ const Bookings = () => {
     window.open(url, '_blank')
   }
 
-  const sendNotificationsAfterPayment = (details, utr) => {
-    const whatsappMessage = `🏸 *New Court Booking Confirmation*
-
-*Payment Status:* PAID ✅
-*Payment Method:* ${details.paymentMethod}
-*UPI Ref/UTR:* ${utr}
-
-*Customer Details:*
-Name: ${details.name}
-Phone: ${details.phone}
-Email: ${details.email}
-
-*Booking Details:*
-Date: ${details.dateText}
-Court: ${details.court}
-Time Slots: ${details.timeSlots}
-Duration: ${details.durationHours} hour(s)
-Total Amount: ₹${details.total}
-
-Please confirm this booking.`
-
-    const businessNumber = toWhatsAppDigits(SITE_CONFIG.whatsappBusiness) || '918884404456'
-    const whatsappUrl = `https://wa.me/${businessNumber}?text=${encodeURIComponent(whatsappMessage)}`
-
-    const emailSubject = `PAID Court Booking - ${details.name} - ${details.dateText}`
-    const emailBody = `New Court Booking (PAID)
-
-Payment Details:
-- Status: PAID
-- Method: ${details.paymentMethod}
-- UPI Ref/UTR: ${utr}
-
-Customer Details:
-- Name: ${details.name}
-- Phone: ${details.phone}
-- Email: ${details.email}
-
-Booking Details:
-- Date: ${details.dateText}
-- Court: ${details.court}
-- Time Slots: ${details.timeSlots}
-- Duration: ${details.durationHours} hour(s)
-- Total Amount: ₹${details.total}
-
-Please confirm this booking with the customer.`
-
-    const emailUrl = `mailto:acebattledorementor@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
-
-    // Customer WhatsApp confirmation (for business to send after confirming)
-    const customerNumber = toIndiaWhatsAppNumber(details.phone)
-    const customerMessage = `🏸 *ACE Battledore Booking Confirmation*
-
-Hi ${details.name},
-
-We have received your payment (UTR: ${utr}).
-
-Booking requested:
-Date: ${details.dateText}
-Court: ${details.court}
-Time: ${details.timeSlots}
-Amount: ₹${details.total}
-
-We will confirm your booking shortly. If you need changes, call us at ${SITE_CONFIG.phone}.`
-    setCustomerWhatsAppUrl(`https://wa.me/${customerNumber}?text=${encodeURIComponent(customerMessage)}`)
-
-    window.open(whatsappUrl, '_blank')
-    window.location.href = emailUrl
-
-    setBookingSubmitted(true)
-    setTimeout(() => {
-      setBookingSubmitted(false)
-      setSelectedSlots([])
-      setBookingForm({ name: '', phone: '', email: '' })
-      setPendingBooking(null)
-      setPaymentMethod('')
-      setPaymentUtr('')
-      setPaymentError('')
-    }, 15000)
+  const confirmPaymentAndNotify = async () => {
+    const utr = paymentUtr.trim()
+    if (!utr) {
+      setPaymentError('Please enter the UPI Ref/UTR after completing payment.')
+      setPaymentStatus('failure')
+      return
+    }
+    const formattedDate = parseDateInputLocal(selectedDate).toLocaleDateString('en-IN', {
+      timeZone: IST_TIME_ZONE,
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+    const timeSlots = getSelectedTimeSlots()
+    const total = getTotalPrice()
+    const payload = {
+      dateYmd: selectedDate,
+      court: selectedCourt,
+      slotIds: selectedSlots,
+      name: bookingForm.name,
+      phone: bookingForm.phone,
+      email: bookingForm.email,
+      utr,
+      paymentMethod: paymentMethod || 'UPI',
+      dateText: formattedDate,
+      timeSlots,
+      total
+    }
+    setPaymentError('')
+    try {
+      const res = await fetch(`${API_BASE}/api/bookings/confirm-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      if (res.status === 409 || !data.success) {
+        setPaymentError(data.error || 'Slots already booked. Please choose different slots.')
+        setPaymentStatus('failure')
+        return
+      }
+      if (!res.ok) {
+        setPaymentError(data.error || 'Something went wrong.')
+        setPaymentStatus('failure')
+        return
+      }
+      if (data.adminWhatsAppUrl) window.open(data.adminWhatsAppUrl, '_blank')
+      if (data.customerWhatsAppUrl) window.open(data.customerWhatsAppUrl, '_blank')
+      setPaymentStatus('success')
+      setBookingSubmitted(true)
+      setTimeout(() => {
+        setBookingSubmitted(false)
+        setSelectedSlots([])
+        setBookingForm({ name: '', phone: '', email: '' })
+        setPendingBooking(null)
+        setPaymentMethod('')
+        setPaymentUtr('')
+        setPaymentError('')
+        setPaymentStatus('idle')
+      }, 15000)
+    } catch (err) {
+      setPaymentError('Server unavailable. Please try again.')
+      setPaymentStatus('failure')
+    }
   }
 
   const handleBookingSubmit = (e) => {
@@ -1736,18 +1912,25 @@ We will confirm your booking shortly. If you need changes, call us at ${SITE_CON
             <h3><Clock size={20} /> Available Time Slots</h3>
             <p className="slots-instruction">Select one or more slots to book</p>
             <div className="time-slots-grid">
-              {generateTimeSlots().map((slot) => (
-                <motion.button
-                  key={slot.id}
-                  className={`time-slot ${selectedSlots.includes(slot.id) ? 'selected' : ''}`}
-                  onClick={() => toggleSlot(slot.id)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <span className="slot-time">{slot.displayTime}</span>
-                  <span className="slot-price">₹{slot.price}</span>
-                </motion.button>
-              ))}
+              {generateTimeSlots().map((slot) => {
+                const isBooked = bookedSlotIds.includes(slot.id)
+                return (
+                  <motion.button
+                    key={slot.id}
+                    className={`time-slot ${selectedSlots.includes(slot.id) ? 'selected' : ''} ${isBooked ? 'booked' : ''}`}
+                    onClick={() => !isBooked && toggleSlot(slot.id)}
+                    whileHover={!isBooked ? { scale: 1.02 } : {}}
+                    whileTap={!isBooked ? { scale: 0.98 } : {}}
+                    disabled={isBooked}
+                    style={isBooked ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                    title={isBooked ? 'Already booked' : ''}
+                  >
+                    <span className="slot-time">{slot.displayTime}</span>
+                    <span className="slot-price">₹{slot.price}</span>
+                    {isBooked && <span style={{ fontSize: 11, display: 'block', marginTop: 4 }}>Booked</span>}
+                  </motion.button>
+                )
+              })}
             </div>
           </motion.div>
         )}
@@ -1777,19 +1960,8 @@ We will confirm your booking shortly. If you need changes, call us at ${SITE_CON
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
                   <div className="success-icon">✅</div>
-                  <h4>Payment Received!</h4>
-                  <p>Booking notification sent via WhatsApp & Email.</p>
-                  {customerWhatsAppUrl && (
-                    <motion.button
-                      type="button"
-                      className="btn-secondary"
-                      onClick={() => window.open(customerWhatsAppUrl, '_blank')}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Send WhatsApp Confirmation to Customer
-                    </motion.button>
-                  )}
+                  <h4>your Booking is successfull</h4>
+                  <p>WhatsApp notifications have been sent to you and the customer.</p>
                   <p className="confirm-note">We'll confirm your booking shortly.</p>
                 </motion.div>
               ) : (
@@ -1882,24 +2054,19 @@ We will confirm your booking shortly. If you need changes, call us at ${SITE_CON
                       {paymentError && (
                         <p style={{ marginTop: 8, color: '#ff6b6b' }}>{paymentError}</p>
                       )}
+                      {paymentStatus === 'failure' && (
+                        <p style={{ marginTop: 8, color: '#ff6b6b', fontWeight: 600 }}>Unseccesful, try again</p>
+                      )}
 
                       <motion.button
                         type="button"
                         className="btn-primary book-btn"
                         style={{ marginTop: 8 }}
-                        onClick={() => {
-                          const utr = paymentUtr.trim()
-                          if (!utr) {
-                            setPaymentError('Please enter the UPI Ref/UTR after completing payment.')
-                            return
-                          }
-                          const details = { ...pendingBooking, paymentMethod: paymentMethod || 'UPI' }
-                          sendNotificationsAfterPayment(details, utr)
-                        }}
+                        onClick={confirmPaymentAndNotify}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        Confirm Payment & Send WhatsApp Notification
+                        Confirm Payment & Send Notifications
                       </motion.button>
                     </div>
                   )}
@@ -1941,6 +2108,8 @@ function App() {
         return <SelfAssessment key="assessment" />
       case 'contact':
         return <ContactUs key="contact" />
+      case 'logic':
+        return <Logic key="logic" />
       default:
         return <AboutUs key="about" />
     }
