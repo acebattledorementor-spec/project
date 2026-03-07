@@ -59,18 +59,11 @@ const parseDateInputLocal = (ymd) => new Date(`${ymd}T00:00:00`)
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
-const ADMIN_LOGIN_CREDENTIALS = {
-  username: 'aceBattledore',
-  password: 'password123'
-}
-
 const SITE_CONFIG = {
   name: "ACE BATTLEDORE",
   tagline: "Badminton Centre of Excellence",
   description: "Elevating Your Game to Championship Level",
   phone: "8884404456, 8884404567",
-  upiPayeeVpa: "saikumar2000sai@ybl",
-  upiPayeeName: "ACE Battledore",
   email: "ACEBATTLEDOREMENTOR@GMAIL.COM",
   address: "21/1 Kempanahalli Village, Yelahanka, Bengaluru, Karnataka 560064",
   hours: "All Days: 6:00 AM - 10:00 PM"
@@ -1464,8 +1457,8 @@ const ContactUs = () => {
 // Login (Admin) Page – login and view all bookings
 const Logic = () => {
   const [token, setToken] = useState(() => typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null)
-  const [username, setUsername] = useState(ADMIN_LOGIN_CREDENTIALS.username)
-  const [password, setPassword] = useState(ADMIN_LOGIN_CREDENTIALS.password)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(false)
@@ -1486,7 +1479,7 @@ const Logic = () => {
     })
       .then((res) => {
         if (res.status === 401) {
-          setLoginError('Your session expired. Please sign in again using the admin credentials below.')
+          setLoginError('Your session expired. Please sign in again.')
           setToken(null)
           return []
         }
@@ -1551,11 +1544,6 @@ const Logic = () => {
           </motion.p>
         </div>
         <motion.div className="contact-container" style={{ maxWidth: 400, margin: '0 auto' }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
-          <div style={{ marginBottom: 16, padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
-            <p style={{ margin: '0 0 10px 0', fontWeight: 700 }}>Ready-to-use admin credentials</p>
-            <p style={{ margin: '0 0 6px 0' }}><strong>Username:</strong> {ADMIN_LOGIN_CREDENTIALS.username}</p>
-            <p style={{ margin: 0 }}><strong>Password:</strong> {ADMIN_LOGIN_CREDENTIALS.password}</p>
-          </div>
           <form onSubmit={handleLogin} className="contact-form">
             <div className="form-group">
               <input
@@ -1578,9 +1566,6 @@ const Logic = () => {
               />
             </div>
             {loginError && <p style={{ color: '#ff6b6b', marginBottom: 12 }}>{loginError}</p>}
-            <p style={{ marginBottom: 12, opacity: 0.85 }}>
-              These fields are prefilled so you can sign in and review all customer bookings quickly.
-            </p>
             <motion.button type="submit" className="btn-primary" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               Sign In
             </motion.button>
@@ -1604,7 +1589,7 @@ const Logic = () => {
             <Lock className="icon" /> Login <span className="highlight">(Admin)</span>
           </motion.h2>
           <motion.p className="page-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
-            Signed in as <strong>{ADMIN_LOGIN_CREDENTIALS.username}</strong> — all customer bookings
+            All customer bookings
           </motion.p>
         </div>
         <motion.button type="button" className="btn-secondary" onClick={handleLogout} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -1626,9 +1611,9 @@ const Logic = () => {
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Purpose</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Customer</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Phone</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>Email</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Time</th>
                   <th style={{ padding: '12px 10px', textAlign: 'right' }}>Amount</th>
-                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>UTR</th>
                 </tr>
               </thead>
               <tbody>
@@ -1639,9 +1624,9 @@ const Logic = () => {
                     <td style={{ padding: '10px' }}>{b.purpose || '—'}</td>
                     <td style={{ padding: '10px' }}>{b.customer_name}</td>
                     <td style={{ padding: '10px' }}>{b.customer_phone}</td>
+                    <td style={{ padding: '10px' }}>{b.customer_email || '—'}</td>
                     <td style={{ padding: '10px' }}>{b.time_slots_text}</td>
                     <td style={{ padding: '10px', textAlign: 'right' }}>₹{b.amount}</td>
-                    <td style={{ padding: '10px', fontSize: '0.9em' }}>{b.utr}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1678,24 +1663,14 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
   const [selectedSlots, setSelectedSlots] = useState([])
   const [bookingForm, setBookingForm] = useState({ name: '', phone: '', email: '' })
   const [bookingSubmitted, setBookingSubmitted] = useState(false)
-  const [pendingBooking, setPendingBooking] = useState(null)
-  const [paymentMethod, setPaymentMethod] = useState('')
-  const [paymentUtr, setPaymentUtr] = useState('')
-  const [paymentError, setPaymentError] = useState('')
-  const [paymentStatus, setPaymentStatus] = useState('idle') // idle | initiated | success | failure
-  const [paymentReceipt, setPaymentReceipt] = useState(null)
-  const [copiedUpiId, setCopiedUpiId] = useState(false)
+  const [submissionError, setSubmissionError] = useState('')
+  const [bookingReceipt, setBookingReceipt] = useState(null)
   const [bookedSlotIds, setBookedSlotIds] = useState([])
 
   useEffect(() => {
     setBookingSubmitted(false)
-    setPendingBooking(null)
-    setPaymentMethod('')
-    setPaymentUtr('')
-    setPaymentError('')
-    setPaymentStatus('idle')
-    setPaymentReceipt(null)
-    setCopiedUpiId(false)
+    setSubmissionError('')
+    setBookingReceipt(null)
   }, [selectedDate, selectedCourt, selectedSlots.join(',')])
 
   useEffect(() => {
@@ -1776,67 +1751,9 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
       .join(', ')
   }
 
-  const getPaymentMethodLabel = (method) => {
-    if (method === 'gpay') return 'Google Pay'
-    if (method === 'phonepe') return 'PhonePe'
-    if (method === 'paytm') return 'Paytm'
-    return 'UPI'
-  }
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault()
 
-  const buildUpiDeepLink = (details, method = 'upi') => {
-    const payeeVpa = SITE_CONFIG.upiPayeeVpa || 'saikumar2000sai@ybl'
-    const payeeName = SITE_CONFIG.upiPayeeName || SITE_CONFIG.name
-    const amount = Number(details.total || 0).toFixed(2)
-    const note = details.purpose
-      ? `${details.purpose} | ${details.court} | ${details.dateText} | ${details.timeSlots}`
-      : `Court booking: ${details.court} | ${details.dateText} | ${details.timeSlots}`
-    const txnRef = `ACE-${Date.now()}`
-
-    const query = new URLSearchParams({
-      pa: payeeVpa,
-      pn: payeeName,
-      am: amount,
-      cu: 'INR',
-      tn: note,
-      tr: txnRef
-    }).toString()
-
-    if (method === 'gpay') return `tez://upi/pay?${query}`
-    if (method === 'phonepe') return `phonepe://pay?${query}`
-    if (method === 'paytm') return `paytmmp://pay?${query}`
-    return `upi://pay?${query}`
-  }
-
-  const copyUpiId = async () => {
-    try {
-      await navigator.clipboard.writeText(SITE_CONFIG.upiPayeeVpa)
-      setCopiedUpiId(true)
-      window.setTimeout(() => setCopiedUpiId(false), 2000)
-    } catch {
-      setPaymentError(`Could not copy the UPI ID automatically. Please pay manually to ${SITE_CONFIG.upiPayeeVpa}.`)
-    }
-  }
-
-  const startPayment = (method) => {
-    if (!pendingBooking) return
-    setPaymentError('')
-    setPaymentMethod(getPaymentMethodLabel(method))
-    setPaymentStatus('initiated')
-
-    try {
-      window.location.href = buildUpiDeepLink(pendingBooking, method)
-    } catch {
-      setPaymentError(`Could not open ${getPaymentMethodLabel(method)} automatically. Please pay manually to ${SITE_CONFIG.upiPayeeVpa} and paste the UTR below.`)
-    }
-  }
-
-  const confirmPayment = async () => {
-    const utr = paymentUtr.trim()
-    if (!utr) {
-      setPaymentError('Please enter the UPI Ref/UTR after completing payment.')
-      setPaymentStatus('failure')
-      return
-    }
     const formattedDate = parseDateInputLocal(selectedDate).toLocaleDateString('en-IN', {
       timeZone: IST_TIME_ZONE,
       weekday: 'long',
@@ -1854,85 +1771,54 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
       phone: bookingForm.phone,
       email: bookingForm.email,
       purpose: purpose || undefined,
-      utr,
-      paymentMethod: paymentMethod || 'UPI',
-      payeeVpa: SITE_CONFIG.upiPayeeVpa,
       dateText: formattedDate,
       timeSlots,
       total
     }
-    setPaymentError('')
+    setSubmissionError('')
     try {
-      const res = await fetch(`${API_BASE}/api/bookings/confirm-payment`, {
+      const res = await fetch(`${API_BASE}/api/bookings/confirm-booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      const data = await res.json()
+      const contentType = res.headers.get('content-type') || ''
+      const data = contentType.includes('application/json')
+        ? await res.json().catch(() => ({}))
+        : {}
+      if (res.status === 404) {
+        setSubmissionError('Booking service is not updated yet. Please restart the backend server and try again.')
+        return
+      }
       if (res.status === 409 || !data.success) {
-        setPaymentError(data.error || 'Slots already booked. Please choose different slots.')
-        setPaymentStatus('failure')
+        setSubmissionError(data.error || 'Slots already booked. Please choose different slots.')
         return
       }
       if (!res.ok) {
-        setPaymentError(data.error || 'Something went wrong.')
-        setPaymentStatus('failure')
+        setSubmissionError(data.error || 'Something went wrong.')
         return
       }
-      setPaymentReceipt(data.paymentReceipt || {
+      setBookingReceipt(data.bookingReceipt || {
+        customerName: bookingForm.name,
         amount: total,
         court: selectedCourt,
         dateText: formattedDate,
-        payeeVpa: SITE_CONFIG.upiPayeeVpa,
-        paymentMethod: paymentMethod || 'UPI',
         timeSlots,
-        utr
+        email: bookingForm.email,
+        phone: bookingForm.phone
       })
-      setPaymentStatus('success')
       setBookingSubmitted(true)
       setTimeout(() => {
         setBookingSubmitted(false)
         setSelectedSlots([])
         setBookingForm({ name: '', phone: '', email: '' })
-        setPendingBooking(null)
-        setPaymentMethod('')
-        setPaymentUtr('')
-        setPaymentError('')
-        setPaymentStatus('idle')
+        setSubmissionError('')
+        setBookingReceipt(null)
         if (typeof clearBookingContext === 'function') clearBookingContext()
       }, 15000)
-    } catch (err) {
-      setPaymentError('Server unavailable. Please try again.')
-      setPaymentStatus('failure')
+    } catch {
+      setSubmissionError('Could not reach the booking service. Please make sure the backend server is running and try again.')
     }
-  }
-
-  const handleBookingSubmit = (e) => {
-    e.preventDefault()
-
-    const formattedDate = parseDateInputLocal(selectedDate).toLocaleDateString('en-IN', {
-      timeZone: IST_TIME_ZONE,
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-    const timeSlots = getSelectedTimeSlots()
-    const total = getTotalPrice()
-
-    setPaymentError('')
-    setPendingBooking({
-      name: bookingForm.name,
-      phone: bookingForm.phone,
-      email: bookingForm.email,
-      dateText: formattedDate,
-      court: selectedCourt,
-      timeSlots,
-      durationHours: selectedSlots.length,
-      total,
-      paymentMethod: paymentMethod || 'UPI',
-      purpose: purpose || undefined
-    })
   }
 
   const today = getISTTodayYMD()
@@ -2134,20 +2020,20 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
                   <div className="success-icon">✅</div>
-                  <h4>Payment recorded successfully</h4>
+                  <h4>Booking confirmed successfully</h4>
                   <p>Your booking request has been captured on this screen right away.</p>
-                  {paymentReceipt && (
+                  {bookingReceipt && (
                     <div style={{ marginTop: 12, textAlign: 'left', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: 14 }}>
-                      <p><strong>Paid to:</strong> {paymentReceipt.payeeVpa}</p>
-                      <p><strong>Amount:</strong> ₹{paymentReceipt.amount}</p>
-                      <p><strong>UPI Ref / UTR:</strong> {paymentReceipt.utr}</p>
-                      <p><strong>Method:</strong> {paymentReceipt.paymentMethod}</p>
-                      <p><strong>Date:</strong> {paymentReceipt.dateText}</p>
-                      <p><strong>Court:</strong> {paymentReceipt.court}</p>
-                      <p><strong>Slots:</strong> {paymentReceipt.timeSlots}</p>
+                      <p><strong>Name:</strong> {bookingReceipt.customerName}</p>
+                      <p><strong>Phone:</strong> {bookingReceipt.phone}</p>
+                      <p><strong>Email:</strong> {bookingReceipt.email}</p>
+                      <p><strong>Amount:</strong> ₹{bookingReceipt.amount}</p>
+                      <p><strong>Date:</strong> {bookingReceipt.dateText}</p>
+                      <p><strong>Court:</strong> {bookingReceipt.court}</p>
+                      <p><strong>Slots:</strong> {bookingReceipt.timeSlots}</p>
                     </div>
                   )}
-                  <p className="confirm-note">Your booking and payment details are confirmed on this screen.</p>
+                  <p className="confirm-note">Your booking details are confirmed on this screen.</p>
                 </motion.div>
               ) : (
                 <motion.form 
@@ -2186,101 +2072,11 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Proceed to Payment <Send size={18} />
+                    Confirm Booking <Send size={18} />
                   </motion.button>
 
-                  {pendingBooking && (
-                    <div className="payment-section" style={{ marginTop: 16 }}>
-                      <h4 style={{ marginBottom: 8 }}>Pay to Confirm Booking</h4>
-                      <p style={{ marginTop: 0, opacity: 0.9 }}>
-                        Pay ₹{pendingBooking.total} to <strong>{SITE_CONFIG.upiPayeeVpa}</strong> ({SITE_CONFIG.upiPayeeName}) and then paste the UPI Ref/UTR below.
-                      </p>
-                      <p style={{ marginTop: 8, opacity: 0.9 }}>
-                        If your browser or payment app blocks direct launch for security reasons, you can still pay manually to this same UPI ID and continue below.
-                      </p>
-
-                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
-                        <motion.button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={() => startPayment('upi')}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          Open Any UPI App
-                        </motion.button>
-                        <motion.button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={() => startPayment('gpay')}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          Pay with Google Pay
-                        </motion.button>
-                        <motion.button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={() => startPayment('phonepe')}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          Pay with PhonePe
-                        </motion.button>
-                        <motion.button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={() => startPayment('paytm')}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          Pay with Paytm
-                        </motion.button>
-                        <motion.button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={copyUpiId}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          {copiedUpiId ? 'UPI ID Copied' : 'Copy UPI ID'}
-                        </motion.button>
-                      </div>
-
-                      {paymentStatus === 'initiated' && (
-                        <p style={{ marginTop: 10, color: '#9fe870', fontWeight: 600 }}>
-                          Complete the payment to {SITE_CONFIG.upiPayeeVpa}, then enter the UTR here to finish your booking.
-                        </p>
-                      )}
-
-                      <div className="form-group" style={{ marginTop: 12 }}>
-                        <input
-                          type="text"
-                          placeholder="UPI Ref / UTR (required after payment)"
-                          value={paymentUtr}
-                          onChange={(e) => setPaymentUtr(e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      {paymentError && (
-                        <p style={{ marginTop: 8, color: '#ff6b6b' }}>{paymentError}</p>
-                      )}
-                      {paymentStatus === 'failure' && (
-                        <p style={{ marginTop: 8, color: '#ff6b6b', fontWeight: 600 }}>Unseccesful, try again</p>
-                      )}
-
-                      <motion.button
-                        type="button"
-                        className="btn-primary book-btn"
-                        style={{ marginTop: 8 }}
-                        onClick={confirmPayment}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Confirm Payment
-                      </motion.button>
-                    </div>
+                  {submissionError && (
+                    <p style={{ marginTop: 12, color: '#ff6b6b' }}>{submissionError}</p>
                   )}
                 </motion.form>
               )}

@@ -24,8 +24,6 @@ const ADMIN_USERNAME = 'aceBattledore'
 const ADMIN_PASSWORD = 'password123'
 const validTokens = new Set()
 
-const UPI_PAYEE_VPA = 'saikumar2000sai@ybl'
-
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '') || req.query.token
   if (!token || !validTokens.has(token)) {
@@ -81,7 +79,7 @@ app.get('/api/bookings/available', (req, res) => {
   }
 })
 
-app.post('/api/bookings/confirm-payment', (req, res) => {
+const handleBookingConfirmation = (req, res) => {
   const {
     dateYmd,
     court,
@@ -90,28 +88,17 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
     phone,
     email,
     purpose,
-    utr,
-    paymentMethod,
-    payeeVpa,
     dateText,
     timeSlots,
     total
   } = req.body || {}
 
-  if (!dateYmd || !court || !Array.isArray(slotIds) || !name || !phone || !email || !utr || total == null) {
+  if (!dateYmd || !court || !Array.isArray(slotIds) || slotIds.length === 0 || !name || !phone || !email || total == null) {
     return res.status(400).json({ error: 'Missing required fields' })
   }
 
   try {
     const purposeText = typeof purpose === 'string' ? purpose.trim() : ''
-    const normalizedPayeeVpa = String(payeeVpa || UPI_PAYEE_VPA).trim().toLowerCase()
-
-    if (normalizedPayeeVpa !== UPI_PAYEE_VPA) {
-      return res.status(400).json({
-        success: false,
-        error: `Payments must be completed only to ${UPI_PAYEE_VPA}.`
-      })
-    }
 
     const bookings = loadBookings()
     const bookedSet = new Set()
@@ -141,9 +128,6 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
       customer_phone: phone,
       customer_email: email,
       amount: Number(total),
-      utr,
-      payment_method: paymentMethod || 'UPI',
-      payment_payee_vpa: normalizedPayeeVpa,
       date_text: dateText || '',
       time_slots_text: timeSlots || '',
       created_at: new Date().toISOString()
@@ -153,20 +137,23 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
 
     res.json({
       success: true,
-      paymentReceipt: {
+      bookingReceipt: {
+        customerName: name,
+        phone,
+        email,
         amount: Number(total),
         court,
         dateText: dateText || '',
-        payeeVpa: normalizedPayeeVpa,
-        paymentMethod: paymentMethod || 'UPI',
-        timeSlots: timeSlots || '',
-        utr
+        timeSlots: timeSlots || ''
       }
     })
   } catch (e) {
     res.status(500).json({ success: false, error: e.message })
   }
-})
+}
+
+app.post('/api/bookings/confirm-booking', handleBookingConfirmation)
+app.post('/api/bookings/confirm-payment', handleBookingConfirmation)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
