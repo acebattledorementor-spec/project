@@ -24,17 +24,7 @@ const ADMIN_USERNAME = 'aceBattledore'
 const ADMIN_PASSWORD = 'password123'
 const validTokens = new Set()
 
-const WHATSAPP_BUSINESS = '918884404456'
-const SITE_PHONE = '8884404456, 8884404567'
 const UPI_PAYEE_VPA = 'saikumar2000sai@ybl'
-
-function toIndiaNum(phone) {
-  const digits = String(phone || '').replace(/\D/g, '')
-  if (digits.length === 10) return `91${digits}`
-  if (digits.length === 11 && digits.startsWith('0')) return `91${digits.slice(1)}`
-  if (digits.length === 12 && digits.startsWith('91')) return digits
-  return digits
-}
 
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '') || req.query.token
@@ -161,51 +151,8 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
     bookings.push(newBooking)
     saveBookings(bookings)
 
-    const adminMessage = `🏸 *New Court Booking Confirmation*
-
-*Payment Status:* PAID ✅
-*Payment Method:* ${paymentMethod || 'UPI'}
-*Paid To:* ${normalizedPayeeVpa}
-*UPI Ref/UTR:* ${utr}
-
-*Customer Details:*
-Name: ${name}
-Phone: ${phone}
-Email: ${email}
-
-*Booking Details:*
-Date: ${dateText}
-Court: ${court}
-Purpose: ${purposeText || '—'}
-Time Slots: ${timeSlots}
-Duration: ${slotIds.length} hour(s)
-Total Amount: ₹${total}
-
-Please confirm this booking.`
-
-    const customerMessage = `🏸 *ACE Battledore Booking Confirmation*
-
-Hi ${name},
-
-We have received your payment to ${normalizedPayeeVpa} (UTR: ${utr}).
-
-Booking requested:
-Date: ${dateText}
-Court: ${court}
-Purpose: ${purposeText || '—'}
-Time: ${timeSlots}
-Amount: ₹${total}
-
-We will confirm your booking shortly. If you need changes, call us at ${SITE_PHONE}.`
-
-    const adminWhatsAppUrl = `https://wa.me/${WHATSAPP_BUSINESS}?text=${encodeURIComponent(adminMessage)}`
-    const customerNumber = toIndiaNum(phone)
-    const customerWhatsAppUrl = `https://wa.me/${customerNumber}?text=${encodeURIComponent(customerMessage)}`
-
     res.json({
       success: true,
-      adminWhatsAppUrl,
-      customerWhatsAppUrl,
       paymentReceipt: {
         amount: Number(total),
         court,

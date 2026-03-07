@@ -57,24 +57,18 @@ const getISTTodayYMD = () => {
 
 const parseDateInputLocal = (ymd) => new Date(`${ymd}T00:00:00`)
 
-const toWhatsAppDigits = (phone) => String(phone || '').replace(/\D/g, '')
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
-const toIndiaWhatsAppNumber = (phone) => {
-  const digits = toWhatsAppDigits(phone)
-  if (digits.length === 10) return `91${digits}`
-  if (digits.length === 11 && digits.startsWith('0')) return `91${digits.slice(1)}`
-  if (digits.length === 12 && digits.startsWith('91')) return digits
-  return digits
+const ADMIN_LOGIN_CREDENTIALS = {
+  username: 'aceBattledore',
+  password: 'password123'
 }
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 const SITE_CONFIG = {
   name: "ACE BATTLEDORE",
   tagline: "Badminton Centre of Excellence",
   description: "Elevating Your Game to Championship Level",
   phone: "8884404456, 8884404567",
-  whatsappBusiness: "918884404456",
   upiPayeeVpa: "saikumar2000sai@ybl",
   upiPayeeName: "ACE Battledore",
   email: "ACEBATTLEDOREMENTOR@GMAIL.COM",
@@ -469,14 +463,14 @@ const AnimatedBackground = () => (
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab }) => {
   const tabs = [
+    { id: 'logic', label: 'Admin Login', icon: Lock },
     { id: 'about', label: 'About Us', icon: Users },
     { id: 'coe', label: 'COE', icon: Award },
     { id: 'bookings', label: 'Book Court', icon: Calendar },
     { id: 'programs', label: 'Skill Programs', icon: Trophy },
     { id: 'induction', label: 'Induction', icon: BookOpen },
     { id: 'assessment', label: 'Self Assessment', icon: ClipboardCheck },
-    { id: 'contact', label: 'Contact Us', icon: Phone },
-    { id: 'logic', label: 'Login', icon: Lock }
+    { id: 'contact', label: 'Contact Us', icon: Phone }
   ]
 
   return (
@@ -1470,8 +1464,8 @@ const ContactUs = () => {
 // Login (Admin) Page – login and view all bookings
 const Logic = () => {
   const [token, setToken] = useState(() => typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState(ADMIN_LOGIN_CREDENTIALS.username)
+  const [password, setPassword] = useState(ADMIN_LOGIN_CREDENTIALS.password)
   const [loginError, setLoginError] = useState('')
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(false)
@@ -1492,6 +1486,7 @@ const Logic = () => {
     })
       .then((res) => {
         if (res.status === 401) {
+          setLoginError('Your session expired. Please sign in again using the admin credentials below.')
           setToken(null)
           return []
         }
@@ -1507,22 +1502,30 @@ const Logic = () => {
   const handleLogin = (e) => {
     e.preventDefault()
     setLoginError('')
+
     fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({
+        username: username.trim(),
+        password: password.trim()
+      })
     })
-      .then((r) => r.json())
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}))
+        if (!r.ok) {
+          throw new Error(data.error || 'Login failed. Please verify the username and password.')
+        }
+        return data
+      })
       .then((data) => {
         if (data.success && data.token) {
           setToken(data.token)
-          setUsername('')
-          setPassword('')
         } else {
           setLoginError(data.error || 'Invalid credentials')
         }
       })
-      .catch(() => setLoginError('Login failed. Is the server running?'))
+      .catch((error) => setLoginError(error.message || 'Could not reach the backend. Please make sure the server is running on port 3001.'))
   }
 
   const handleLogout = () => {
@@ -1544,10 +1547,15 @@ const Logic = () => {
             <Lock className="icon" /> Login <span className="highlight">(Admin)</span>
           </motion.h2>
           <motion.p className="page-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
-            Sign in to view booking details
+            Sign in to view all customer booking details
           </motion.p>
         </div>
         <motion.div className="contact-container" style={{ maxWidth: 400, margin: '0 auto' }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+          <div style={{ marginBottom: 16, padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
+            <p style={{ margin: '0 0 10px 0', fontWeight: 700 }}>Ready-to-use admin credentials</p>
+            <p style={{ margin: '0 0 6px 0' }}><strong>Username:</strong> {ADMIN_LOGIN_CREDENTIALS.username}</p>
+            <p style={{ margin: 0 }}><strong>Password:</strong> {ADMIN_LOGIN_CREDENTIALS.password}</p>
+          </div>
           <form onSubmit={handleLogin} className="contact-form">
             <div className="form-group">
               <input
@@ -1570,6 +1578,9 @@ const Logic = () => {
               />
             </div>
             {loginError && <p style={{ color: '#ff6b6b', marginBottom: 12 }}>{loginError}</p>}
+            <p style={{ marginBottom: 12, opacity: 0.85 }}>
+              These fields are prefilled so you can sign in and review all customer bookings quickly.
+            </p>
             <motion.button type="submit" className="btn-primary" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               Sign In
             </motion.button>
@@ -1593,7 +1604,7 @@ const Logic = () => {
             <Lock className="icon" /> Login <span className="highlight">(Admin)</span>
           </motion.h2>
           <motion.p className="page-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
-            All court bookings
+            Signed in as <strong>{ADMIN_LOGIN_CREDENTIALS.username}</strong> — all customer bookings
           </motion.p>
         </div>
         <motion.button type="button" className="btn-secondary" onClick={handleLogout} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -1772,7 +1783,7 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
     return 'UPI'
   }
 
-  const buildUpiDeepLink = (details) => {
+  const buildUpiDeepLink = (details, method = 'upi') => {
     const payeeVpa = SITE_CONFIG.upiPayeeVpa || 'saikumar2000sai@ybl'
     const payeeName = SITE_CONFIG.upiPayeeName || SITE_CONFIG.name
     const amount = Number(details.total || 0).toFixed(2)
@@ -1790,6 +1801,9 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
       tr: txnRef
     }).toString()
 
+    if (method === 'gpay') return `tez://upi/pay?${query}`
+    if (method === 'phonepe') return `phonepe://pay?${query}`
+    if (method === 'paytm') return `paytmmp://pay?${query}`
     return `upi://pay?${query}`
   }
 
@@ -1809,13 +1823,14 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
     setPaymentMethod(getPaymentMethodLabel(method))
     setPaymentStatus('initiated')
 
-    const paymentWindow = window.open(buildUpiDeepLink(pendingBooking), '_blank', 'noopener,noreferrer')
-    if (!paymentWindow) {
-      setPaymentError(`Could not open your UPI app from this browser. Please pay manually to ${SITE_CONFIG.upiPayeeVpa} and paste the UTR below.`)
+    try {
+      window.location.href = buildUpiDeepLink(pendingBooking, method)
+    } catch {
+      setPaymentError(`Could not open ${getPaymentMethodLabel(method)} automatically. Please pay manually to ${SITE_CONFIG.upiPayeeVpa} and paste the UTR below.`)
     }
   }
 
-  const confirmPaymentAndNotify = async () => {
+  const confirmPayment = async () => {
     const utr = paymentUtr.trim()
     if (!utr) {
       setPaymentError('Please enter the UPI Ref/UTR after completing payment.')
@@ -1864,7 +1879,6 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
         setPaymentStatus('failure')
         return
       }
-      if (data.adminWhatsAppUrl) window.open(data.adminWhatsAppUrl, '_blank', 'noopener,noreferrer')
       setPaymentReceipt(data.paymentReceipt || {
         amount: total,
         court: selectedCourt,
@@ -2133,7 +2147,7 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
                       <p><strong>Slots:</strong> {paymentReceipt.timeSlots}</p>
                     </div>
                   )}
-                  <p className="confirm-note">A WhatsApp draft for the admin has also been opened in a new tab.</p>
+                  <p className="confirm-note">Your booking and payment details are confirmed on this screen.</p>
                 </motion.div>
               ) : (
                 <motion.form 
@@ -2260,11 +2274,11 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
                         type="button"
                         className="btn-primary book-btn"
                         style={{ marginTop: 8 }}
-                        onClick={confirmPaymentAndNotify}
+                        onClick={confirmPayment}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        Confirm Payment & Send Notifications
+                        Confirm Payment
                       </motion.button>
                     </div>
                   )}
@@ -2281,7 +2295,7 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
 // ==================== MAIN APP ====================
 
 function App() {
-  const [activeTab, setActiveTab] = useState('about')
+  const [activeTab, setActiveTab] = useState('logic')
   const [showHero, setShowHero] = useState(true)
   const [bookingContext, setBookingContext] = useState(null)
 
@@ -2322,7 +2336,7 @@ function App() {
       case 'logic':
         return <Logic key="logic" />
       default:
-        return <AboutUs key="about" />
+        return <Logic key="logic" />
     }
   }
 
