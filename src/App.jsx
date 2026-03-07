@@ -71,20 +71,12 @@ const SITE_CONFIG = {
 
 // social media configuration for homepage embeds
 const SOCIAL_CONFIG = {
-  instagramHandle: "your_instagram_handle", // replace with real handle
-  instagramPosts: [
-    "https://www.instagram.com/p/POSTID1/",
-    "https://www.instagram.com/p/POSTID2/",
-    "https://www.instagram.com/p/POSTID3/",
-    "https://www.instagram.com/p/POSTID4/"
-  ],
   // only one video will be displayed and autoplayed
   youtubeFeatured: "X-pjndP7sNw",
   youtubeChannelId: "UCxxxxxxxxxxxx", // replace with your actual channel ID
   youtubeChannelVideos: [
     "LqCGTvt-MSw",
-    "f0vbFNlJl9o",
-    "VIDEO_ID_3"
+    "f0vbFNlJl9o"
   ]
 }
 
@@ -120,6 +112,13 @@ const HOMEPAGE_IMAGES = [
   "/homepage/IMG_4756.jpeg",
   "/homepage/IMG_4755.jpeg",
   "/homepage/IMG_4752.jpeg"
+]
+
+const BOOKING_PAGE_IMAGES = [
+  "/homepage/IMG_4755.jpeg",
+  "/homepage/IMG_4756.jpeg",
+  "/homepage/IMG_4757.jpeg",
+  "/homepage/IMG_4759.jpeg"
 ]
 
 const ABOUT_DATA = {
@@ -512,7 +511,11 @@ const Navigation = ({ activeTab, setActiveTab }) => {
 
 // Social media feed component
 const SocialFeed = () => {
-  // show four recent posts in a horizontal scroll for each platform
+  const getYouTubeEmbedSrc = (videoId) => (
+    `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&controls=1&rel=0&loop=1&playlist=${videoId}`
+  )
+
+  // show YouTube content in a horizontal scroll
   return (
     <motion.div
       className="social-section"
@@ -520,25 +523,18 @@ const SocialFeed = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 1 }}
     >
-      <h3>Follow Us</h3>
+      <h3>Watch Us on YouTube</h3>
       <div className="social-embeds horizontal">
-        <div className="instagram-embed carousel">
-          {SOCIAL_CONFIG.instagramPosts.map((url, idx) => (
-            <iframe
-              key={idx}
-              title={`Instagram post ${idx + 1}`}
-              src={url + "embed"}
-              loading="lazy"
-              allowTransparency
-            ></iframe>
-          ))}
-        </div>
         <div className="youtube-embed carousel">
-          <iframe
-            title="YouTube featured video"
-            src={`https://www.youtube.com/embed/${SOCIAL_CONFIG.youtubeFeatured}?autoplay=1&mute=1`}
-            loading="lazy"
-          ></iframe>
+          <div className="youtube-video-card">
+            <iframe
+              title="YouTube featured video"
+              src={getYouTubeEmbedSrc(SOCIAL_CONFIG.youtubeFeatured)}
+              loading="lazy"
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+              allowFullScreen
+            ></iframe>
+          </div>
         </div>
         <div className="youtube-subscribe">
           <a
@@ -555,13 +551,16 @@ const SocialFeed = () => {
         <div className="channel-videos-section">
           <h4>More Videos from Our Channel</h4>
           <div className="channel-videos-carousel">
-            {SOCIAL_CONFIG.youtubeChannelVideos.map((vid, idx) => (
-              <iframe
-                key={idx}
-                title={`Channel video ${idx + 1}`}
-                src={`https://www.youtube.com/embed/${vid}`}
-                loading="lazy"
-              ></iframe>
+            {SOCIAL_CONFIG.youtubeChannelVideos.slice(0, 2).map((vid, idx) => (
+              <div key={vid} className="channel-video-card">
+                <iframe
+                  title={`Channel video ${idx + 1}`}
+                  src={getYouTubeEmbedSrc(vid)}
+                  loading="lazy"
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                  allowFullScreen
+                ></iframe>
+              </div>
             ))}
           </div>
         </div>
@@ -571,23 +570,37 @@ const SocialFeed = () => {
 }
 
 // Background Image Slideshow Component
-const BackgroundSlideshow = () => {
+const BackgroundSlideshow = ({
+  images = HOMEPAGE_IMAGES,
+  className = '',
+  showIndicators = true,
+  altPrefix = 'ACE Battledore'
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
+    if (images.length <= 1) return undefined
+
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % HOMEPAGE_IMAGES.length)
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
     }, 3000)
+
     return () => clearInterval(interval)
-  }, [])
+  }, [images])
+
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [images])
+
+  if (!images.length) return null
 
   return (
-    <div className="background-slideshow">
+    <div className={`background-slideshow ${className}`.trim()}>
       <AnimatePresence mode="wait">
         <motion.img
           key={currentIndex}
-          src={HOMEPAGE_IMAGES[currentIndex]}
-          alt={`ACE Battledore ${currentIndex + 1}`}
+          src={images[currentIndex]}
+          alt={`${altPrefix} ${currentIndex + 1}`}
           className="background-image"
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -596,15 +609,17 @@ const BackgroundSlideshow = () => {
         />
       </AnimatePresence>
       <div className="background-overlay"></div>
-      <div className="slideshow-indicators">
-        {HOMEPAGE_IMAGES.map((_, index) => (
-          <button
-            key={index}
-            className={`indicator ${index === currentIndex ? 'active' : ''}`}
-            onClick={() => setCurrentIndex(index)}
-          />
-        ))}
-      </div>
+      {showIndicators && (
+        <div className="slideshow-indicators">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              className={`indicator ${index === currentIndex ? 'active' : ''}`}
+              onClick={() => setCurrentIndex(index)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -1831,6 +1846,14 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
     >
+      <BackgroundSlideshow
+        images={BOOKING_PAGE_IMAGES}
+        className="bookings-background-slideshow"
+        showIndicators={false}
+        altPrefix="Book court background"
+      />
+
+      <div className="bookings-page-content">
       <div className="page-header">
         <motion.h2 
           className="page-title"
@@ -2083,6 +2106,8 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
             </AnimatePresence>
           </motion.div>
         )}
+      </div>
+
       </div>
     </motion.div>
   )

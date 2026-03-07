@@ -141,6 +141,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1.5rem;
   padding: 1rem 3rem;
   background: rgba(26, 26, 46, 0.95);
   backdrop-filter: blur(10px);
@@ -196,6 +197,13 @@ body {
   display: flex;
   list-style: none;
   gap: 0.5rem;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.nav-tabs li {
+  flex: 0 0 auto;
 }
 
 .nav-tab {
@@ -212,6 +220,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   border-radius: 8px;
+  white-space: nowrap;
   transition: all 0.3s ease;
 }
 
@@ -237,7 +246,7 @@ body {
 /* ==================== MAIN CONTENT ==================== */
 .main-content {
   flex: 1;
-  padding: 2rem 3rem;
+  padding: 2rem clamp(1rem, 3vw, 3rem);
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
@@ -454,23 +463,27 @@ body {
 
 /* ==================== PAGE STYLES ==================== */
 .page {
-  padding: 2rem 0;
+  padding: clamp(1.5rem, 3vw, 2rem) 0;
 }
 
 .page-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
 }
 
 .page-title {
   font-size: 2.5rem;
   font-weight: 700;
+  line-height: 1.15;
   margin-bottom: 0.5rem;
 }
 
 .page-subtitle {
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.7);
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.6;
 }
 
 /* ==================== ABOUT PAGE ==================== */
@@ -539,7 +552,7 @@ body {
 
 .stats-section {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 2rem;
 }
 
@@ -582,13 +595,13 @@ body {
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 2rem;
 }
 
 /* social feed styles */
 .social-section {
-  margin: 4rem 0;
+  margin: clamp(3rem, 6vw, 4rem) 0;
   text-align: center;
 }
 
@@ -611,28 +624,28 @@ body {
   padding-bottom: 0.5rem;
 }
 
-.carousel iframe {
-  flex: 0 0 100%;
-  max-width: 100%;
-  height: auto;
-  scroll-snap-align: start;
-}
-
 .youtube-embed.carousel {
   width: 100%;
 }
 
-.youtube-featured {
-  margin-top: 2rem;
-  display: flex;
-  justify-content: center;
+.youtube-video-card,
+.channel-video-card {
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  scroll-snap-align: start;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #000;
 }
 
-.youtube-featured iframe {
-  width: 90%;
-  max-width: 800px;
-  height: 450px;
+.youtube-video-card iframe,
+.channel-video-card iframe {
+  width: 100%;
+  height: 100%;
   border: none;
+  display: block;
 }
 
 .youtube-subscribe {
@@ -673,24 +686,6 @@ body {
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding-bottom: 0.5rem;
-}
-
-.channel-videos-carousel iframe {
-  flex: 0 0 100%;
-  max-width: 100%;
-  height: auto;
-  scroll-snap-align: start;
-}
-
-.social-embeds iframe {
-  border: none;
-  width: 350px;
-  height: 400px;
-  max-width: 100%;
-}
-
-.instagram-embed iframe {
-  background: #fff;
 }
 
 .team-card {
@@ -1063,8 +1058,8 @@ body {
 /* ==================== CONTACT PAGE ==================== */
 .contact-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -1195,8 +1190,39 @@ body {
 
 /* ==================== BOOKINGS PAGE ==================== */
 .bookings-page {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0;
+  isolation: isolate;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.bookings-page-content {
+  position: relative;
+  z-index: 3;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem clamp(1rem, 4vw, 3rem);
+}
+
+.bookings-background-slideshow .background-image {
+  opacity: 0.4;
+}
+
+.bookings-background-slideshow .background-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(8, 12, 28, 0.72) 0%,
+    rgba(10, 16, 34, 0.82) 50%,
+    rgba(7, 10, 24, 0.9) 100%
+  );
 }
 
 .booking-pricing-info {
@@ -1266,7 +1292,7 @@ body {
 
 .booking-selectors {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 2rem;
   background: rgba(255, 255, 255, 0.05);
   padding: 2rem;
@@ -1363,7 +1389,7 @@ body {
 
 .time-slots-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -1421,7 +1447,7 @@ body {
 
 .summary-details {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
@@ -1537,20 +1563,42 @@ body {
 /* ==================== RESPONSIVE DESIGN ==================== */
 @media (max-width: 1024px) {
   .navigation {
-    padding: 1rem 2rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .logo-wrapper {
+    align-items: center;
+  }
+
+  .nav-logo {
+    justify-content: center;
   }
 
   .nav-tabs {
-    gap: 0.25rem;
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .nav-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .nav-tab {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.85rem;
   }
 
   .nav-tab span {
-    display: none;
+    display: inline;
   }
 
   .hero {
@@ -1575,11 +1623,11 @@ body {
   }
 
   .stats-section {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
   }
 
   .team-grid {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
   }
 
   .timeline-item,
@@ -1602,6 +1650,15 @@ body {
 
   .booking-selectors {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .time-slots-section,
+  .booking-summary,
+  .contact-info,
+  .contact-form-container {
+    padding: 1.5rem;
   }
 
   .time-slots-grid {
@@ -1611,11 +1668,23 @@ body {
   .summary-details {
     grid-template-columns: 1fr;
   }
+
+  .bookings-page-content {
+    padding: 1.75rem 1.5rem 2rem;
+  }
 }
 
 @media (max-width: 640px) {
   .main-content {
-    padding: 1.5rem;
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .navigation {
+    padding: 0.85rem 1rem 1rem;
+  }
+
+  .nav-tabs {
+    gap: 0.4rem;
   }
 
   .hero-title {
@@ -1646,9 +1715,24 @@ body {
     font-size: 1.8rem;
   }
 
+  .page-subtitle {
+    font-size: 0.95rem;
+  }
+
   .stats-section,
   .team-grid {
     grid-template-columns: 1fr;
+  }
+
+  .card,
+  .stat-item,
+  .team-card,
+  .contact-info,
+  .contact-form-container,
+  .booking-selectors,
+  .time-slots-section,
+  .booking-summary {
+    padding: 1.25rem;
   }
 
   .team-avatar {
@@ -1688,22 +1772,46 @@ body {
 
   .time-slots-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .time-slot {
+    padding: 0.85rem 0.5rem;
   }
 
   .booking-form .form-row {
     grid-template-columns: 1fr;
   }
 
+  .bookings-page-content {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .booking-pricing-info {
+    gap: 1rem;
+  }
+
   .court-buttons {
-    justify-content: center;
+    justify-content: flex-start;
+  }
+
+  .court-btn {
+    flex: 1 1 calc(50% - 0.75rem);
+    min-width: 130px;
+    text-align: center;
   }
 
   .nav-tab {
-    padding: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.82rem;
   }
 
   .nav-logo .logo-subtitle {
     display: none;
+  }
+
+  .logo-text {
+    font-size: 1.2rem;
   }
 }
 
