@@ -228,28 +228,28 @@ const SKILL_PROGRAMS = [
 const INDUCTION_STEPS = [
   { 
     step: 1, 
-    title: "Registration", 
-    description: "Complete your online registration form and select your preferred program level." 
+    title: "COE Discovery & Registration", 
+    description: "Share the athlete's background, goals, and competition ambition so we can place them correctly in the Center of Excellence pathway." 
   },
   { 
     step: 2, 
-    title: "Assessment", 
-    description: "Attend a skill assessment session where our coaches evaluate your current level." 
+    title: "Structured COE Assessment", 
+    description: "Book a COE test slot and complete the on-court structured assessment for the relevant level (stroke control, movement, physical and tactical parameters)." 
   },
   { 
     step: 3, 
-    title: "Orientation", 
-    description: "Join our orientation session to understand facility rules, schedules, and expectations." 
+    title: "Scoring & Level Recommendation", 
+    description: "Our coaches consolidate scores across modules, calculate the overall percentage, and recommend an appropriate COE level for the athlete." 
   },
   { 
     step: 4, 
-    title: "Equipment Setup", 
-    description: "Get guidance on equipment selection and ensure you're ready for training." 
+    title: "Feedback & Development Plan", 
+    description: "You receive clear feedback on strengths and gaps, with a written development focus so athlete, coach and parent are aligned on next steps." 
   },
   { 
     step: 5, 
-    title: "Begin Training", 
-    description: "Start your journey with your assigned coach and training group!" 
+    title: "Onboarding into COE Training", 
+    description: "Once the athlete meets the required benchmark (typically 75% and above), they are inducted into the COE batch with a structured training schedule." 
   }
 ]
 
@@ -275,6 +275,15 @@ const ASSESSMENT_QUESTIONS = [
     options: ["Sedentary", "Light activity", "Moderately active", "Very active", "Athletic"]
   }
 ]
+
+const COE_PASS_PERCENT = 75
+
+const COE_TEST_FEES = {
+  'level-1': 500,
+  'level-2': 1000,
+  'level-3': 1500,
+  'level-4': 1500
+}
 
 const COE_ASSESSMENT = {
   title: "ACE BATTLEDORE - CENTER OF EXCELLENCE",
@@ -467,7 +476,7 @@ const Navigation = ({ activeTab, setActiveTab }) => {
     { id: 'induction', label: 'Induction', icon: BookOpen },
     { id: 'assessment', label: 'Self Assessment', icon: ClipboardCheck },
     { id: 'contact', label: 'Contact Us', icon: Phone },
-    { id: 'logic', label: 'Logic', icon: Lock }
+    { id: 'logic', label: 'Login', icon: Lock }
   ]
 
   return (
@@ -834,7 +843,7 @@ const SkillPrograms = () => (
   </motion.div>
 )
 
-// Induction Page
+// Induction Page – COE Structured Assessment
 const Induction = () => (
   <motion.div 
     className="page induction-page"
@@ -850,7 +859,7 @@ const Induction = () => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <span className="highlight">Induction</span> Process
+        COE <span className="highlight">Induction</span> & Structured Assessment
       </motion.h2>
       <motion.p 
         className="page-subtitle"
@@ -858,7 +867,16 @@ const Induction = () => (
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        Your Step-by-Step Journey to Joining ACE Battledore
+        How athletes enter the ACE Battledore Center of Excellence through a clear, fair and data-driven assessment pathway.
+      </motion.p>
+      <motion.p
+        className="page-subtitle"
+        style={{ marginTop: 8, fontSize: 14, opacity: 0.9 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+      >
+        Every aspiring COE athlete first completes a structured on-court assessment. Scores across technical, physical and tactical modules are combined into an overall percentage; athletes typically need 75% and above to enter or progress within the COE levels.
       </motion.p>
     </div>
 
@@ -892,14 +910,14 @@ const Induction = () => (
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 1.5 }}
     >
-      <h3>Ready to Begin?</h3>
-      <p>Start your induction process today and join hundreds of aspiring badminton champions!</p>
+      <h3>Ready for COE Assessment?</h3>
+      <p>Book a COE test slot, get a clear percentage score and move into a level that truly matches the athlete's current game.</p>
       <motion.button 
         className="btn-primary"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        Start Registration <ChevronRight size={20} />
+        Start COE Induction <ChevronRight size={20} />
       </motion.button>
     </motion.div>
   </motion.div>
@@ -1057,8 +1075,9 @@ const SelfAssessment = () => {
 }
 
 // COE (Center of Excellence) Assessment Page
-const CenterOfExcellence = () => {
+const CenterOfExcellence = ({ onBookTestSlot }) => {
   const [expandedLevel, setExpandedLevel] = useState(null)
+  const [levelOverallPercent, setLevelOverallPercent] = useState({})
 
   return (
     <motion.div 
@@ -1100,6 +1119,14 @@ const CenterOfExcellence = () => {
 
         <div className="coe-levels">
           {COE_ASSESSMENT.levels.map((level, levelIndex) => (
+            (() => {
+              const fee = COE_TEST_FEES[level.id] ?? 1500
+              const percent = levelOverallPercent[level.id]
+              const numericPercent = percent === '' || percent == null ? null : Number(percent)
+              const hasPercent = numericPercent != null && !Number.isNaN(numericPercent)
+              const passed = hasPercent ? numericPercent >= COE_PASS_PERCENT : null
+
+              return (
             <motion.div 
               key={level.id}
               className="coe-level-card"
@@ -1121,6 +1148,30 @@ const CenterOfExcellence = () => {
                 <ChevronRight className={`level-icon ${expandedLevel === level.id ? 'expanded' : ''}`} />
               </motion.div>
 
+              <div style={{ padding: '0 16px 12px', display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ marginRight: 'auto', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', opacity: 0.9 }}>
+                  <span style={{ padding: '6px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                    Test Fee: <strong>₹{fee}</strong>
+                  </span>
+                  <span style={{ padding: '6px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                    Pass if Overall ≥ <strong>{COE_PASS_PERCENT}%</strong>
+                  </span>
+                </div>
+                <motion.button
+                  type="button"
+                  className="btn-primary"
+                  style={{ padding: '10px 14px', fontSize: 14 }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (typeof onBookTestSlot === 'function') onBookTestSlot(level)
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Take Test &amp; Book Slot <Calendar size={18} />
+                </motion.button>
+              </div>
+
               <AnimatePresence>
                 {expandedLevel === level.id && (
                   <motion.div 
@@ -1130,6 +1181,39 @@ const CenterOfExcellence = () => {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
                   >
+                    <div style={{ margin: '6px 0 14px', padding: '12px 14px', borderRadius: 12, background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                        <div>
+                          <div style={{ fontWeight: 700, marginBottom: 4 }}>Level Result</div>
+                          <div style={{ opacity: 0.9, fontSize: 13 }}>A level is <strong>passed</strong> only if overall score is <strong>{COE_PASS_PERCENT}%</strong> or above.</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            value={percent ?? ''}
+                            onChange={(e) => {
+                              const v = e.target.value
+                              setLevelOverallPercent((prev) => ({ ...prev, [level.id]: v }))
+                            }}
+                            placeholder="Overall %"
+                            style={{
+                              width: 140,
+                              padding: '10px 12px',
+                              borderRadius: 10,
+                              border: '1px solid rgba(255,255,255,0.18)',
+                              background: 'rgba(255,255,255,0.06)',
+                              color: 'inherit'
+                            }}
+                          />
+                          <span style={{ padding: '8px 12px', borderRadius: 999, background: passed === null ? 'rgba(255,255,255,0.08)' : passed ? 'rgba(46, 204, 113, 0.18)' : 'rgba(255, 107, 107, 0.18)', border: '1px solid rgba(255,255,255,0.12)', fontWeight: 700 }}>
+                            {passed === null ? 'Not graded' : passed ? 'PASSED' : 'NOT PASSED'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                     {level.modules.map((module, moduleIndex) => (
                       <motion.div 
                         key={module.id}
@@ -1166,6 +1250,8 @@ const CenterOfExcellence = () => {
                 )}
               </AnimatePresence>
             </motion.div>
+              )
+            })()
           ))}
         </div>
 
@@ -1381,7 +1467,7 @@ const ContactUs = () => {
   )
 }
 
-// Logic (Admin) Page – login and view all bookings
+// Login (Admin) Page – login and view all bookings
 const Logic = () => {
   const [token, setToken] = useState(() => typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null)
   const [username, setUsername] = useState('')
@@ -1455,7 +1541,7 @@ const Logic = () => {
       >
         <div className="page-header">
           <motion.h2 className="page-title" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-            <Lock className="icon" /> Logic <span className="highlight">(Admin)</span>
+            <Lock className="icon" /> Login <span className="highlight">(Admin)</span>
           </motion.h2>
           <motion.p className="page-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
             Sign in to view booking details
@@ -1504,7 +1590,7 @@ const Logic = () => {
       <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <motion.h2 className="page-title" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-            <Lock className="icon" /> Logic <span className="highlight">(Admin)</span>
+            <Lock className="icon" /> Login <span className="highlight">(Admin)</span>
           </motion.h2>
           <motion.p className="page-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
             All court bookings
@@ -1526,6 +1612,7 @@ const Logic = () => {
                 <tr style={{ borderBottom: '2px solid rgba(255,255,255,0.2)' }}>
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Date</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Court</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left' }}>Purpose</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Customer</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Phone</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left' }}>Time</th>
@@ -1538,6 +1625,7 @@ const Logic = () => {
                   <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                     <td style={{ padding: '10px' }}>{b.date_text || b.date_ymd}</td>
                     <td style={{ padding: '10px' }}>{b.court}</td>
+                    <td style={{ padding: '10px' }}>{b.purpose || '—'}</td>
                     <td style={{ padding: '10px' }}>{b.customer_name}</td>
                     <td style={{ padding: '10px' }}>{b.customer_phone}</td>
                     <td style={{ padding: '10px' }}>{b.time_slots_text}</td>
@@ -1555,7 +1643,25 @@ const Logic = () => {
 }
 
 // Bookings Page
-const Bookings = () => {
+const Bookings = ({ bookingContext, clearBookingContext }) => {
+  const isCOETest = bookingContext?.type === 'coe_test'
+  const coeTestFee = (() => {
+    if (!isCOETest) return 0
+    const byId = bookingContext?.levelId ? COE_TEST_FEES[bookingContext.levelId] : undefined
+    if (typeof byId === 'number') return byId
+    const levelNum = Number(String(bookingContext?.levelName || '').match(/\d+/)?.[0] || '')
+    if (levelNum === 1) return 500
+    if (levelNum === 2) return 1000
+    if (levelNum === 3) return 1500
+    if (levelNum === 4) return 1500
+    return 1500
+  })()
+
+  const purpose =
+    bookingContext?.type === 'coe_test'
+      ? `COE Assessment ${bookingContext.levelName || ''}${bookingContext.levelTitle ? ` — ${bookingContext.levelTitle}` : ''}`.trim()
+      : ''
+
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedCourt, setSelectedCourt] = useState('')
   const [selectedSlots, setSelectedSlots] = useState([])
@@ -1606,13 +1712,16 @@ const Bookings = () => {
     const todayIST = getISTTodayYMD()
     const { hour: nowHourIST, minute: nowMinuteIST } = getISTNowParts()
 
-    const minStartHourForSelectedDate =
-      selectedDate === todayIST
-        ? Math.max(BOOKING_CONFIG.businessHours.start, nowHourIST + (nowMinuteIST > 0 ? 1 : 0))
-        : BOOKING_CONFIG.businessHours.start
+    const isSelectedWeekend = selectedDate ? isWeekend(selectedDate) : false
+    const windowStart = isCOETest ? 9 : BOOKING_CONFIG.businessHours.start
+    const windowEnd = isCOETest ? (isSelectedWeekend ? 19 : 16) : BOOKING_CONFIG.businessHours.end
+
+    const minStartHourForSelectedDate = selectedDate === todayIST
+      ? Math.max(windowStart, nowHourIST + (nowMinuteIST > 0 ? 1 : 0))
+      : windowStart
 
     const slots = []
-    for (let hour = minStartHourForSelectedDate; hour < BOOKING_CONFIG.businessHours.end; hour++) {
+    for (let hour = minStartHourForSelectedDate; hour < windowEnd; hour++) {
       const startTime = `${hour.toString().padStart(2, '0')}:00`
       const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`
       const price = getPrice(hour, selectedDate)
@@ -1627,14 +1736,16 @@ const Bookings = () => {
   }
 
   const toggleSlot = (slotId) => {
-    setSelectedSlots(prev => 
-      prev.includes(slotId) 
-        ? prev.filter(id => id !== slotId)
-        : [...prev, slotId]
-    )
+    setSelectedSlots((prev) => {
+      const alreadySelected = prev.includes(slotId)
+      if (alreadySelected) return prev.filter((id) => id !== slotId)
+      if (isCOETest) return [slotId] // COE test slot is a single slot booking
+      return [...prev, slotId]
+    })
   }
 
   const getTotalPrice = () => {
+    if (isCOETest) return coeTestFee
     return selectedSlots.reduce((total, slotId) => {
       return total + getPrice(slotId, selectedDate)
     }, 0)
@@ -1654,7 +1765,9 @@ const Bookings = () => {
     const payeeVpa = SITE_CONFIG.upiPayeeVpa || '9972765565@paytm'
     const payeeName = SITE_CONFIG.upiPayeeName || SITE_CONFIG.name
     const amount = Number(details.total || 0).toFixed(2)
-    const note = `Court booking: ${details.court} | ${details.dateText} | ${details.timeSlots}`
+    const note = details.purpose
+      ? `${details.purpose} | ${details.court} | ${details.dateText} | ${details.timeSlots}`
+      : `Court booking: ${details.court} | ${details.dateText} | ${details.timeSlots}`
     const txnRef = `ACE-${Date.now()}`
 
     const query = new URLSearchParams({
@@ -1717,6 +1830,7 @@ const Bookings = () => {
       name: bookingForm.name,
       phone: bookingForm.phone,
       email: bookingForm.email,
+      purpose: purpose || undefined,
       utr,
       paymentMethod: paymentMethod || 'UPI',
       dateText: formattedDate,
@@ -1754,6 +1868,7 @@ const Bookings = () => {
         setPaymentUtr('')
         setPaymentError('')
         setPaymentStatus('idle')
+        if (typeof clearBookingContext === 'function') clearBookingContext()
       }, 15000)
     } catch (err) {
       setPaymentError('Server unavailable. Please try again.')
@@ -1784,7 +1899,8 @@ const Bookings = () => {
       timeSlots,
       durationHours: selectedSlots.length,
       total,
-      paymentMethod: paymentMethod || 'UPI'
+      paymentMethod: paymentMethod || 'UPI',
+      purpose: purpose || undefined
     })
   }
 
@@ -1805,7 +1921,11 @@ const Bookings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          Book a <span className="highlight">Court</span>
+          {purpose ? (
+            <>Book a <span className="highlight">COE Test Slot</span></>
+          ) : (
+            <>Book a <span className="highlight">Court</span></>
+          )}
         </motion.h2>
         <motion.p 
           className="page-subtitle"
@@ -1813,50 +1933,73 @@ const Bookings = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          Reserve your preferred court and time slot
+          {purpose ? (
+            <>Book an assessment slot for <strong>{purpose}</strong></>
+          ) : (
+            <>Reserve your preferred court and time slot</>
+          )}
         </motion.p>
+        {purpose && (
+          <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <span style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
+              Booking context: <strong>{purpose}</strong>
+            </span>
+            <motion.button
+              type="button"
+              className="btn-secondary"
+              style={{ padding: '10px 14px', fontSize: 14 }}
+              onClick={() => typeof clearBookingContext === 'function' && clearBookingContext()}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Clear
+            </motion.button>
+          </div>
+        )}
       </div>
 
-      <div className="booking-pricing-info">
-        <motion.div 
-          className="pricing-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <h4><Clock size={18} /> Weekday Rates (Mon-Fri)</h4>
-          <ul>
-            <li>6:00 AM - 10:00 AM: <strong>₹325/hour</strong></li>
-            <li>10:00 AM - 3:00 PM: <strong>₹275/hour</strong></li>
-            <li>3:00 PM - 10:00 PM: <strong>₹325/hour</strong></li>
-          </ul>
-        </motion.div>
-        <motion.div 
-          className="pricing-card weekend"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <h4><Star size={18} /> Weekend Rates (Sat-Sun-Holidays)</h4>
-          <ul>
-            <li>6:00 AM - 10:00 PM: <strong>₹350/hour</strong></li>
-          </ul>
-        </motion.div>
-        <motion.div 
-          className="pricing-card bulk"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <h4><Trophy size={18} /> Bulk Booking Discounts</h4>
-          <ul>
-            <li><strong>Monthly (Weekdays):</strong> ₹6,500</li>
-            <li><strong>Monthly (Full):</strong> ₹9,750</li>
-            <li><strong>Quarterly:</strong> ₹29,250</li>
-            <li><strong>Yearly:</strong> ₹1,09,500</li>
-          </ul>
-        </motion.div>
-      </div>
+      {!isCOETest && (
+        <div className="booking-pricing-info">
+          <motion.div 
+            className="pricing-card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <h4><Clock size={18} /> Weekday Rates (Mon-Fri)</h4>
+            <ul>
+              <li>6:00 AM - 10:00 AM: <strong>₹325/hour</strong></li>
+              <li>10:00 AM - 3:00 PM: <strong>₹275/hour</strong></li>
+              <li>3:00 PM - 10:00 PM: <strong>₹325/hour</strong></li>
+            </ul>
+          </motion.div>
+          <motion.div 
+            className="pricing-card weekend"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <h4><Star size={18} /> Weekend Rates (Sat-Sun-Holidays)</h4>
+            <ul>
+              <li>6:00 AM - 10:00 PM: <strong>₹350/hour</strong></li>
+            </ul>
+          </motion.div>
+          <motion.div 
+            className="pricing-card bulk"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <h4><Trophy size={18} /> Bulk Booking Discounts</h4>
+            <ul>
+              <li><strong>Monthly (Weekdays):</strong> ₹6,500</li>
+              <li><strong>Monthly (Full):</strong> ₹9,750</li>
+              <li><strong>Quarterly:</strong> ₹29,250</li>
+              <li><strong>Yearly:</strong> ₹1,09,500</li>
+            </ul>
+          </motion.div>
+        </div>
+      )}
 
       <div className="booking-container">
         <motion.div 
@@ -1879,7 +2022,7 @@ const Bookings = () => {
             />
             {selectedDate && (
               <span className="day-type">
-                {isWeekend(selectedDate) ? '🌟 Weekend Rate' : '📅 Weekday Rate'}
+                {isCOETest ? '📅 COE test booking' : (isWeekend(selectedDate) ? '🌟 Weekend Rate' : '📅 Weekday Rate')}
               </span>
             )}
           </div>
@@ -1910,7 +2053,7 @@ const Bookings = () => {
             transition={{ duration: 0.5 }}
           >
             <h3><Clock size={20} /> Available Time Slots</h3>
-            <p className="slots-instruction">Select one or more slots to book</p>
+            <p className="slots-instruction">{isCOETest ? 'Select one slot to book (1 hour)' : 'Select one or more slots to book'}</p>
             <div className="time-slots-grid">
               {generateTimeSlots().map((slot) => {
                 const isBooked = bookedSlotIds.includes(slot.id)
@@ -1926,7 +2069,7 @@ const Bookings = () => {
                     title={isBooked ? 'Already booked' : ''}
                   >
                     <span className="slot-time">{slot.displayTime}</span>
-                    <span className="slot-price">₹{slot.price}</span>
+                    {!isCOETest && <span className="slot-price">₹{slot.price}</span>}
                     {isBooked && <span style={{ fontSize: 11, display: 'block', marginTop: 4 }}>Booked</span>}
                   </motion.button>
                 )
@@ -1975,14 +2118,14 @@ const Bookings = () => {
                   <div className="form-row">
                     <input 
                       type="text" 
-                      placeholder="Your Name"
+                      placeholder={purpose ? "Athlete Name" : "Your Name"}
                       value={bookingForm.name}
                       onChange={(e) => setBookingForm({...bookingForm, name: e.target.value})}
                       required
                     />
                     <input 
                       type="tel" 
-                      placeholder="Phone Number"
+                      placeholder={purpose ? "Athlete Phone Number" : "Phone Number"}
                       value={bookingForm.phone}
                       onChange={(e) => setBookingForm({...bookingForm, phone: e.target.value})}
                       required
@@ -1990,7 +2133,7 @@ const Bookings = () => {
                   </div>
                   <input 
                     type="email" 
-                    placeholder="Email Address"
+                    placeholder={purpose ? "Athlete Email Address" : "Email Address"}
                     value={bookingForm.email}
                     onChange={(e) => setBookingForm({...bookingForm, email: e.target.value})}
                     required
@@ -2085,6 +2228,7 @@ const Bookings = () => {
 function App() {
   const [activeTab, setActiveTab] = useState('about')
   const [showHero, setShowHero] = useState(true)
+  const [bookingContext, setBookingContext] = useState(null)
 
   useEffect(() => {
     if (activeTab !== 'about') {
@@ -2092,16 +2236,28 @@ function App() {
     }
   }, [activeTab])
 
+  const startCOETestBooking = (level) => {
+    setBookingContext({
+      type: 'coe_test',
+      levelId: level?.id,
+      levelName: level?.name,
+      levelTitle: level?.title
+    })
+    setActiveTab('bookings')
+  }
+
+  const clearBookingContext = () => setBookingContext(null)
+
   const renderPage = () => {
     switch (activeTab) {
       case 'about':
         return <AboutUs key="about" />
       case 'coe':
-        return <CenterOfExcellence key="coe" />
+        return <CenterOfExcellence key="coe" onBookTestSlot={startCOETestBooking} />
       case 'programs':
         return <SkillPrograms key="programs" />
       case 'bookings':
-        return <Bookings key="bookings" />
+        return <Bookings key="bookings" bookingContext={bookingContext} clearBookingContext={clearBookingContext} />
       case 'induction':
         return <Induction key="induction" />
       case 'assessment':

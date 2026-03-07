@@ -98,6 +98,7 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
     name,
     phone,
     email,
+    purpose,
     utr,
     paymentMethod,
     dateText,
@@ -110,6 +111,7 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
   }
 
   try {
+    const purposeText = typeof purpose === 'string' ? purpose.trim() : ''
     const bookings = loadBookings()
     const bookedSet = new Set()
     for (const b of bookings) {
@@ -132,6 +134,7 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
       id: nextId,
       date_ymd: dateYmd,
       court,
+      purpose: purposeText,
       slot_ids: slotIds,
       customer_name: name,
       customer_phone: phone,
@@ -160,6 +163,7 @@ Email: ${email}
 *Booking Details:*
 Date: ${dateText}
 Court: ${court}
+Purpose: ${purposeText || '—'}
 Time Slots: ${timeSlots}
 Duration: ${slotIds.length} hour(s)
 Total Amount: ₹${total}
@@ -175,6 +179,7 @@ We have received your payment (UTR: ${utr}).
 Booking requested:
 Date: ${dateText}
 Court: ${court}
+Purpose: ${purposeText || '—'}
 Time: ${timeSlots}
 Amount: ₹${total}
 
