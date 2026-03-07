@@ -455,14 +455,14 @@ const AnimatedBackground = () => (
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab }) => {
   const tabs = [
-    { id: 'logic', label: 'Admin Login', icon: Lock },
     { id: 'about', label: 'About Us', icon: Users },
     { id: 'coe', label: 'COE', icon: Award },
     { id: 'bookings', label: 'Book Court', icon: Calendar },
     { id: 'programs', label: 'Skill Programs', icon: Trophy },
     { id: 'induction', label: 'Induction', icon: BookOpen },
     { id: 'assessment', label: 'Self Assessment', icon: ClipboardCheck },
-    { id: 'contact', label: 'Contact Us', icon: Phone }
+    { id: 'contact', label: 'Contact Us', icon: Phone },
+    { id: 'logic', label: 'Admin Login', icon: Lock }
   ]
 
   return (
@@ -2116,15 +2116,8 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
 // ==================== MAIN APP ====================
 
 function App() {
-  const [activeTab, setActiveTab] = useState('logic')
-  const [showHero, setShowHero] = useState(true)
+  const [activeTab, setActiveTab] = useState('about')
   const [bookingContext, setBookingContext] = useState(null)
-
-  useEffect(() => {
-    if (activeTab !== 'about') {
-      setShowHero(false)
-    }
-  }, [activeTab])
 
   const startCOETestBooking = (level) => {
     setBookingContext({
@@ -2157,7 +2150,7 @@ function App() {
       case 'logic':
         return <Logic key="logic" />
       default:
-        return <Logic key="logic" />
+        return <AboutUs key="about" />
     }
   }
 
@@ -2167,7 +2160,7 @@ function App() {
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       
       <main className="main-content">
-        {activeTab === 'about' && showHero && (
+        {activeTab === 'about' && (
           <HeroSection setActiveTab={setActiveTab} />
         )}
         
