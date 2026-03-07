@@ -1671,7 +1671,9 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentUtr, setPaymentUtr] = useState('')
   const [paymentError, setPaymentError] = useState('')
-  const [paymentStatus, setPaymentStatus] = useState('idle') // idle | success | failure
+  const [paymentStatus, setPaymentStatus] = useState('idle') // idle | initiated | success | failure
+  const [paymentReceipt, setPaymentReceipt] = useState(null)
+  const [copiedUpiId, setCopiedUpiId] = useState(false)
   const [bookedSlotIds, setBookedSlotIds] = useState([])
 
   useEffect(() => {
@@ -1681,6 +1683,8 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
     setPaymentUtr('')
     setPaymentError('')
     setPaymentStatus('idle')
+    setPaymentReceipt(null)
+    setCopiedUpiId(false)
   }, [selectedDate, selectedCourt, selectedSlots.join(',')])
 
   useEffect(() => {
@@ -1761,8 +1765,15 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
       .join(', ')
   }
 
-  const buildUpiDeepLink = (scheme, details) => {
-    const payeeVpa = SITE_CONFIG.upiPayeeVpa || '9972765565@paytm'
+  const getPaymentMethodLabel = (method) => {
+    if (method === 'gpay') return 'Google Pay'
+    if (method === 'phonepe') return 'PhonePe'
+    if (method === 'paytm') return 'Paytm'
+    return 'UPI'
+  }
+
+  const buildUpiDeepLink = (details) => {
+    const payeeVpa = SITE_CONFIG.upiPayeeVpa || 'saikumar2000sai@ybl'
     const payeeName = SITE_CONFIG.upiPayeeName || SITE_CONFIG.name
     const amount = Number(details.total || 0).toFixed(2)
     const note = details.purpose
@@ -1779,32 +1790,29 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
       tr: txnRef
     }).toString()
 
-    // Common schemes:
-    // - upi://pay (generic)
-    // - tez://upi/pay (Google Pay, legacy but still widely supported)
-    // - phonepe://pay (PhonePe)
-    // - paytmmp://pay (Paytm)
-    if (scheme === 'tez') return `tez://upi/pay?${query}`
-    if (scheme === 'phonepe') return `phonepe://pay?${query}`
-    if (scheme === 'paytm') return `paytmmp://pay?${query}`
     return `upi://pay?${query}`
+  }
+
+  const copyUpiId = async () => {
+    try {
+      await navigator.clipboard.writeText(SITE_CONFIG.upiPayeeVpa)
+      setCopiedUpiId(true)
+      window.setTimeout(() => setCopiedUpiId(false), 2000)
+    } catch {
+      setPaymentError(`Could not copy the UPI ID automatically. Please pay manually to ${SITE_CONFIG.upiPayeeVpa}.`)
+    }
   }
 
   const startPayment = (method) => {
     if (!pendingBooking) return
     setPaymentError('')
-    setPaymentMethod(method)
+    setPaymentMethod(getPaymentMethodLabel(method))
+    setPaymentStatus('initiated')
 
-    const url =
-      method === 'gpay'
-        ? buildUpiDeepLink('tez', pendingBooking)
-        : method === 'phonepe'
-          ? buildUpiDeepLink('phonepe', pendingBooking)
-          : method === 'paytm'
-            ? buildUpiDeepLink('paytm', pendingBooking)
-            : buildUpiDeepLink('upi', pendingBooking)
-
-    window.open(url, '_blank')
+    const paymentWindow = window.open(buildUpiDeepLink(pendingBooking), '_blank', 'noopener,noreferrer')
+    if (!paymentWindow) {
+      setPaymentError(`Could not open your UPI app from this browser. Please pay manually to ${SITE_CONFIG.upiPayeeVpa} and paste the UTR below.`)
+    }
   }
 
   const confirmPaymentAndNotify = async () => {
@@ -1833,6 +1841,7 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
       purpose: purpose || undefined,
       utr,
       paymentMethod: paymentMethod || 'UPI',
+      payeeVpa: SITE_CONFIG.upiPayeeVpa,
       dateText: formattedDate,
       timeSlots,
       total
@@ -1855,8 +1864,16 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
         setPaymentStatus('failure')
         return
       }
-      if (data.adminWhatsAppUrl) window.open(data.adminWhatsAppUrl, '_blank')
-      if (data.customerWhatsAppUrl) window.open(data.customerWhatsAppUrl, '_blank')
+      if (data.adminWhatsAppUrl) window.open(data.adminWhatsAppUrl, '_blank', 'noopener,noreferrer')
+      setPaymentReceipt(data.paymentReceipt || {
+        amount: total,
+        court: selectedCourt,
+        dateText: formattedDate,
+        payeeVpa: SITE_CONFIG.upiPayeeVpa,
+        paymentMethod: paymentMethod || 'UPI',
+        timeSlots,
+        utr
+      })
       setPaymentStatus('success')
       setBookingSubmitted(true)
       setTimeout(() => {
@@ -2103,9 +2120,20 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
                   exit={{ opacity: 0, scale: 0.8 }}
                 >
                   <div className="success-icon">✅</div>
-                  <h4>your Booking is successfull</h4>
-                  <p>WhatsApp notifications have been sent to you and the customer.</p>
-                  <p className="confirm-note">We'll confirm your booking shortly.</p>
+                  <h4>Payment recorded successfully</h4>
+                  <p>Your booking request has been captured on this screen right away.</p>
+                  {paymentReceipt && (
+                    <div style={{ marginTop: 12, textAlign: 'left', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: 14 }}>
+                      <p><strong>Paid to:</strong> {paymentReceipt.payeeVpa}</p>
+                      <p><strong>Amount:</strong> ₹{paymentReceipt.amount}</p>
+                      <p><strong>UPI Ref / UTR:</strong> {paymentReceipt.utr}</p>
+                      <p><strong>Method:</strong> {paymentReceipt.paymentMethod}</p>
+                      <p><strong>Date:</strong> {paymentReceipt.dateText}</p>
+                      <p><strong>Court:</strong> {paymentReceipt.court}</p>
+                      <p><strong>Slots:</strong> {paymentReceipt.timeSlots}</p>
+                    </div>
+                  )}
+                  <p className="confirm-note">A WhatsApp draft for the admin has also been opened in a new tab.</p>
                 </motion.div>
               ) : (
                 <motion.form 
@@ -2151,10 +2179,22 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
                     <div className="payment-section" style={{ marginTop: 16 }}>
                       <h4 style={{ marginBottom: 8 }}>Pay to Confirm Booking</h4>
                       <p style={{ marginTop: 0, opacity: 0.9 }}>
-                        Pay ₹{pendingBooking.total} to <strong>{SITE_CONFIG.upiPayeeVpa}</strong> and then paste the UPI Ref/UTR below.
+                        Pay ₹{pendingBooking.total} to <strong>{SITE_CONFIG.upiPayeeVpa}</strong> ({SITE_CONFIG.upiPayeeName}) and then paste the UPI Ref/UTR below.
+                      </p>
+                      <p style={{ marginTop: 8, opacity: 0.9 }}>
+                        If your browser or payment app blocks direct launch for security reasons, you can still pay manually to this same UPI ID and continue below.
                       </p>
 
                       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+                        <motion.button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => startPayment('upi')}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          Open Any UPI App
+                        </motion.button>
                         <motion.button
                           type="button"
                           className="btn-secondary"
@@ -2182,7 +2222,22 @@ const Bookings = ({ bookingContext, clearBookingContext }) => {
                         >
                           Pay with Paytm
                         </motion.button>
+                        <motion.button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={copyUpiId}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          {copiedUpiId ? 'UPI ID Copied' : 'Copy UPI ID'}
+                        </motion.button>
                       </div>
+
+                      {paymentStatus === 'initiated' && (
+                        <p style={{ marginTop: 10, color: '#9fe870', fontWeight: 600 }}>
+                          Complete the payment to {SITE_CONFIG.upiPayeeVpa}, then enter the UTR here to finish your booking.
+                        </p>
+                      )}
 
                       <div className="form-group" style={{ marginTop: 12 }}>
                         <input

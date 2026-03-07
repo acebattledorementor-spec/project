@@ -26,6 +26,7 @@ const validTokens = new Set()
 
 const WHATSAPP_BUSINESS = '918884404456'
 const SITE_PHONE = '8884404456, 8884404567'
+const UPI_PAYEE_VPA = 'saikumar2000sai@ybl'
 
 function toIndiaNum(phone) {
   const digits = String(phone || '').replace(/\D/g, '')
@@ -101,6 +102,7 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
     purpose,
     utr,
     paymentMethod,
+    payeeVpa,
     dateText,
     timeSlots,
     total
@@ -112,6 +114,15 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
 
   try {
     const purposeText = typeof purpose === 'string' ? purpose.trim() : ''
+    const normalizedPayeeVpa = String(payeeVpa || UPI_PAYEE_VPA).trim().toLowerCase()
+
+    if (normalizedPayeeVpa !== UPI_PAYEE_VPA) {
+      return res.status(400).json({
+        success: false,
+        error: `Payments must be completed only to ${UPI_PAYEE_VPA}.`
+      })
+    }
+
     const bookings = loadBookings()
     const bookedSet = new Set()
     for (const b of bookings) {
@@ -142,6 +153,7 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
       amount: Number(total),
       utr,
       payment_method: paymentMethod || 'UPI',
+      payment_payee_vpa: normalizedPayeeVpa,
       date_text: dateText || '',
       time_slots_text: timeSlots || '',
       created_at: new Date().toISOString()
@@ -153,6 +165,7 @@ app.post('/api/bookings/confirm-payment', (req, res) => {
 
 *Payment Status:* PAID ✅
 *Payment Method:* ${paymentMethod || 'UPI'}
+*Paid To:* ${normalizedPayeeVpa}
 *UPI Ref/UTR:* ${utr}
 
 *Customer Details:*
@@ -174,7 +187,7 @@ Please confirm this booking.`
 
 Hi ${name},
 
-We have received your payment (UTR: ${utr}).
+We have received your payment to ${normalizedPayeeVpa} (UTR: ${utr}).
 
 Booking requested:
 Date: ${dateText}
@@ -192,7 +205,16 @@ We will confirm your booking shortly. If you need changes, call us at ${SITE_PHO
     res.json({
       success: true,
       adminWhatsAppUrl,
-      customerWhatsAppUrl
+      customerWhatsAppUrl,
+      paymentReceipt: {
+        amount: Number(total),
+        court,
+        dateText: dateText || '',
+        payeeVpa: normalizedPayeeVpa,
+        paymentMethod: paymentMethod || 'UPI',
+        timeSlots: timeSlots || '',
+        utr
+      }
     })
   } catch (e) {
     res.status(500).json({ success: false, error: e.message })
